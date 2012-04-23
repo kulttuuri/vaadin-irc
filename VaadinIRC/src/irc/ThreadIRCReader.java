@@ -83,16 +83,12 @@ public class ThreadIRCReader extends Thread
 	        	String[] split = row.split("!");
 	        	irc.GUIInterface.otherJoinedChannel(rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND+1), irc.session.getServer(), split[0].substring(1));
 	        }
-	        // normal channel message
-	        else if (rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND).equals("PRIVMSG"))
+	        // Normal channel message
+	        else if (!row.startsWith(":" + irc.session.getNickname()) && rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND).equals("PRIVMSG"))
             {
-	            // Haetaan nick
-	            //nick = rivi.split("\\!");
-	            //nick[0] = nick[0].substring(1);
-	            // Haetaan viesti
-	            //viesti = row.substring(1).split("\\:");
-	            //irc.GUIInterface.receivedNewMessage(viesti[1], viesti[0]);
-	            //irc.UI.LisaaRivi("<" + nick[0] + "> " + viesti[1]);
+	        	String[] splitMsg = row.split(":");
+	        	String[] splitNick = row.split("!");
+	        	irc.GUIInterface.receivedNewMessage(IRCHelper.generateIRCMessage(splitNick[0].substring(1), row.replace(":"+splitMsg[1], "").substring(1)), rowSpaces.get(2));
             }
 	
 	        // TODO: Botin toiminnot.

@@ -1,5 +1,7 @@
 package VaadinIRC;
 
+import org.vaadin.artur.icepush.ICEPush;
+
 import irc.IRCSession;
 import VaadinIRC.VaadinIRC.VaadinIRC;
 

@@ -1,12 +1,11 @@
 package VaadinIRC.GUI;
 
-import irc.IRCHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-
 import VaadinIRC.VaadinIRC.VaIRCInterface;
-
+import com.vaadin.event.Action;
+import com.vaadin.event.Action.Handler;
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -14,7 +13,6 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -26,12 +24,16 @@ import com.vaadin.ui.VerticalLayout;
  */
 public class channelGUI implements Button.ClickListener, Serializable
 {
+	/** Name of the channel. */
 	private String channelName;
+	/** Panel containing the channel messages. */
 	private Panel panelMessages;
+	/** Table containing the nicknames in the channel. */
 	private Table tableNicknames;
+	/** Textfield which will be used to write the message. */
 	private TextField textfieldMessagefield;
+	/** Button to send the message to channel or to IRC as an command. */
 	private Button buttonSendMessage;
-	//private IRCChannel ircChannel;
 	/** Reference to IRCInterface. */
 	private VaIRCInterface ircInterface;
 	/** Panel containing this channel's GUI */
@@ -56,9 +58,10 @@ public class channelGUI implements Button.ClickListener, Serializable
 	public void addMessageToChannelTextarea(String newMessage)
 	{
 		Label label = new Label(newMessage);
-		label.setContentMode(Label.CONTENT_RAW);
+			label.setContentMode(Label.CONTENT_RAW);
 			label.setWidth(550, Sizeable.UNITS_PIXELS);
 		panelMessages.addComponent(label);
+		ircInterface.pushChangesToClient();
 	}
 	
 	/**
@@ -69,27 +72,42 @@ public class channelGUI implements Button.ClickListener, Serializable
 	{
 		tableNicknames.removeAllItems();
 		for (String nickname : nicknames) tableNicknames.addItem(nickname);
+		ircInterface.pushChangesToClient();
 	}
 	
+	/**
+	 * Adds user to channel table.
+	 * User will only be added if it did exist.
+	 * @param nickname Nickname to be added.
+	 */
 	public void addUserToChannel(String nickname)
 	{
 		tableNicknames.addItem(nickname);
-		
+		ircInterface.pushChangesToClient();
 	}
 	
+	/**
+	 * Removes user from channel table if it did exist there.
+	 * @param nickname Nickname to be removed.
+	 */
 	public void removeUserFromChannel(String nickname)
 	{
 		tableNicknames.removeItem(nickname);
+		ircInterface.pushChangesToClient();
 	}
 	
-	public String 	  getChannelName()		{ return channelName; }
-	/*
-	public TextArea   getGUIMessageArea()	{ return textareaMessages; }
-	public Table      getGUINicknames()		{ return tableNicknames; }
-	public TextField  getGUIMessageField()	{ return textfieldMessagefield; }
-	*/
-	//public IRCChannel getChannel()			{ return ircChannel; }
+	/**
+	 * Returns the channel name.
+	 * @return Channel name.
+	 */
+	public String getChannelName()
+	{
+		return channelName;
+		}
 	
+	/**
+	 * Styles the channel GUI components.
+	 */
 	private void styleComponents()
 	{
 		panelMessages.setWidth(550, Sizeable.UNITS_PIXELS);
@@ -108,6 +126,9 @@ public class channelGUI implements Button.ClickListener, Serializable
 		buttonSendMessage.addListener(this);
 	}
 	
+	/**
+	 * Creates the channel GUI.
+	 */
 	private void createChannelGUI()
 	{
 		VerticalLayout mainVerticalLayout = new VerticalLayout();

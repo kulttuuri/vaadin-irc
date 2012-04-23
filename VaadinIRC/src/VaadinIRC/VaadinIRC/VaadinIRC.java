@@ -29,6 +29,7 @@ public class VaadinIRC extends VaadinIrcGUI
 		
 		// Setup IRC class & IRC Interface
 		ircInterface.setVaadinIRC(this);
+		ircInterface.initICEPush(window);
 		irc = new IRC(ircInterface, session);
 		ircInterface.setIRC(irc);
 		// Create status channel.

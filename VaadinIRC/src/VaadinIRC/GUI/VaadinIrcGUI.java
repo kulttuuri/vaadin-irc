@@ -14,7 +14,7 @@ public class VaadinIrcGUI
 {
 	/** Contains reference to Vaadin application main window. */
 	protected Window window;
-	
+	/** Contains the channel / user conversation tabs. */
 	protected TabSheet channelTabs;
 	
 	public VaadinIrcGUI(Window window)

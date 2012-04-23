@@ -1,6 +1,12 @@
 package VaadinIRC.VaadinIRC;
 
 import java.util.ArrayList;
+
+import org.vaadin.artur.icepush.ICEPush;
+
+import com.vaadin.ui.Window;
+
+import VaadinIRC.main;
 import irc.IRC;
 import irc.IRCInterface;
 import irc.IRCSession;
@@ -15,14 +21,31 @@ public class VaIRCInterface implements IRCInterface
 {
 	private VaadinIRC vairc;
 	private IRC irc;
+	private ICEPush pusher = new ICEPush();
+	
+	/**
+	 * Initializes ICEPush component by adding the component to application main window.
+	 * @param window Application window.
+	 */
+	public void initICEPush(Window window)
+	{
+		window.addComponent(pusher);
+	}
+	
+	/**
+	 * Forces server to send the latest information to client using the
+	 * ICEPush addon for Vaadin.
+	 */
+	public void pushChangesToClient()
+	{
+		if (ICEPush.getPushContext(pusher.getApplication().getContext()) != null) pusher.push();
+	}
 	
 	/**
 	 * Handles the command that client sent.
 	 */
 	private void handleCommand(String command)
 	{
-		command = command.toUpperCase();
-		
 		// QUIT
 		if (command.equalsIgnoreCase("quit"))
 		{
@@ -108,6 +131,7 @@ public class VaIRCInterface implements IRCInterface
 	{
 		// Create new channel if it does not exist already
 		if (!vairc.channelMap.containsKey(channelName)) vairc.createChannel(channelName, network);
+		pushChangesToClient();
 	}
 	
 	public void userListChanged(String channel, ArrayList<String> users)
@@ -116,6 +140,7 @@ public class VaIRCInterface implements IRCInterface
 			System.out.println("Channel cannot be found: " + channel + ". Cannot add users to channel list.");
 		
 		vairc.channelMap.get(channel).addChannelUsersToTable(users);
+		pushChangesToClient();
 	}
 	
 	public String getCurrentChannelName()
@@ -128,5 +153,6 @@ public class VaIRCInterface implements IRCInterface
 	{
 		// Add user to channel if the channel exists.
 		if (vairc.channelMap.containsKey(channelName)) vairc.channelMap.get(channelName).addUserToChannel(nickname);
+		pushChangesToClient();
 	}
 }
