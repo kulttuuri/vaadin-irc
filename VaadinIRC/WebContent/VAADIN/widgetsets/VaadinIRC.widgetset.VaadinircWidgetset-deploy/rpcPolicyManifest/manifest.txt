@@ -1,0 +1,2 @@
+# Module VaadinIRC.widgetset.VaadinircWidgetset
+# RPC service class, partial path of RPC policy file
