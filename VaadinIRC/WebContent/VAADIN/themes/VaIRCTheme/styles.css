@@ -2,12 +2,19 @@
 
 /** OWN STYLES */
 
-.textareaMessages {
-	color: black;
-}
-
+/** Button "Send" for sending messages. */
 .buttonSendMessage {
 	height: 23px;
+}
+
+/** Tab where there is new activity. */
+.tabNewMessages {
+	font-weight: bold;
+}
+
+/** Normal tab formatting. */
+.tabNormal {
+	font-weight: normal;
 }
 
 /** GREEN CHAMELEON STYLES */

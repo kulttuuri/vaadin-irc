@@ -27,7 +27,7 @@ public abstract interface IRCInterface
 	 * @see IRC#writeMessageToBuffer(String)
 	 * @param message Message to be sent to server.
 	 */
-	public abstract void sendMessageToServer(String message);
+	public abstract boolean sendMessageToServer(String message);
 	
 	/**
 	 * Sends message to given channel.
