@@ -16,21 +16,16 @@ public class IRC
     protected IRCInterface GUIInterface;
     /** IRC Session information. */
     protected IRCSession session;
-
-    /** To determine in reader and writer threads if the application is still running. */
-    private boolean isRunning = true;
-
+    /** To determine is the connection to IRC server established and active. */
+    private boolean isRunning = false;
     /** Socket used to create an IRC connection to IRC server. */
     protected Socket socket;
     /** BufferedWriter used to write data to IRC server. */
     protected BufferedWriter writer;
     /** BufferedReader used to read data from IRC server. */
     protected BufferedReader reader;
-    
     /** Thread for reading from IRC connection socket */
     ThreadIRCReader threadIRCReader;
-    /** Thread for writing to IRC connection socket. */
-    ThreadIRCWriter threadIRCWriter;
 
     /**
      * Constructor to initialize new IRC and connect to server.
@@ -68,12 +63,11 @@ public class IRC
      * Sends message to given channel.
      * @param channel Channel where message will be sent.
      * @param message Message that will be sent.
+     * @throws NoConnectionInitializedException If connection to IRC server is not established, this gets thrown.
      */
-    public void sendMessageToChannel(String channel, String message)
+    public void sendMessageToChannel(String channel, String message) throws NoConnectionInitializedException
     {
-    	try {
-    		writeMessageToBuffer("PRIVMSG " + GUIInterface.getCurrentChannelName() + " :" + message);
-		} catch (Exception e) { System.out.println(e); e.printStackTrace(); }
+		writeMessageToBuffer("PRIVMSG " + GUIInterface.getCurrentChannelName() + " :" + message);
         GUIInterface.receivedNewMessage(IRCHelper.generateIRCMessage(session.getNickname(), message), channel);
     }
     

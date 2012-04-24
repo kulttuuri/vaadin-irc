@@ -55,6 +55,7 @@ public class ThreadIRCReader extends Thread
 	        // If going through list of nicknames
 	        else if (row.indexOf("353") >= 0)
             {
+	        	System.out.println("DEBUG: going through nicknames for row: " + row);
 	        	String split[] = row.split(" ");
 	        	ArrayList<String> newNicks = new ArrayList<String>();
 	            int i = 0;
@@ -70,6 +71,7 @@ public class ThreadIRCReader extends Thread
                     }
 	                i++;
                 }
+	            System.out.println("DEBUG: WENT THROUGH NICKNAMES");
 	            irc.GUIInterface.userListChanged(split[4], newNicks);
             }
 	        // Current user wanted to join a channel

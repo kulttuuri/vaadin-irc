@@ -40,18 +40,15 @@ public class ThreadIRCConnect extends Thread
 		}
 		catch (InvalidNicknameException e)
 		{
-			System.out.println(e);
-			e.printStackTrace();
+			irc.GUIInterface.receivedStatusMessage(e.getMessage());
 		}
 		catch (NicknameAlreadyInUseException e)
 		{
-			System.out.println(e);
-			e.printStackTrace();
+			irc.GUIInterface.receivedStatusMessage(e.getMessage());
 		}
 		catch (IOException e)
 		{
-			System.out.println(e);
-			e.printStackTrace();
+			irc.GUIInterface.receivedStatusMessage(e.getMessage());
 		}
 	}
 	
@@ -77,7 +74,7 @@ public class ThreadIRCConnect extends Thread
         	irc.GUIInterface.receivedStatusMessage("Unable to initialize socket connection to server: " + irc.session.getServer() + " using port " + irc.session.getServerPort());
         	try { irc.closeConnection(); } catch (NoConnectionInitializedException noConE) { }
         }
-        System.out.println("DEBUG: initialized socket connection.");
+
         // Create new buffered writer of the connection
         irc.writer = new BufferedWriter(new OutputStreamWriter(irc.socket.getOutputStream()));
         // Create new buffered reader of the connection
@@ -97,8 +94,9 @@ public class ThreadIRCConnect extends Thread
         	e.printStackTrace();
         }
         
+        // Connect to server
         while ((row = irc.reader.readLine()) != null)
-            {
+        {
         	irc.GUIInterface.receivedStatusMessage(row);
         	
         	if (row.startsWith("PING "))
@@ -127,8 +125,8 @@ public class ThreadIRCConnect extends Thread
             else if (row.indexOf(IRCEnums.CONNECT_NICKNAME_IN_USE) >= 0)
             {
                 throw new NicknameAlreadyInUseException();
-                }
             }
+        }
 
         irc.GUIInterface.receivedStatusMessage("Connected to network: " + irc.session.getServer() + " through port " + irc.session.getServerPort());
 

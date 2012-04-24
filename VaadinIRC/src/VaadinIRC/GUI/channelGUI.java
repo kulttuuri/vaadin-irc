@@ -3,9 +3,13 @@ package VaadinIRC.GUI;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+
 import VaadinIRC.VaadinIRC.VaIRCInterface;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
+import com.vaadin.event.ShortcutAction;
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -22,10 +26,12 @@ import com.vaadin.ui.VerticalLayout;
  * @author Aleksi Postari
  *
  */
-public class channelGUI implements Button.ClickListener, Serializable
+public class channelGUI extends ShortcutListener implements Button.ClickListener, Serializable
 {
-	/** Name of the channel. */
+	/** Name of the channel. TODO: Separate IRCChannel class? */
 	private String channelName;
+	/** Channel title text. TODO: Separate IRCChannel class? */
+	private String channelTitle;
 	/** Panel containing the channel messages. */
 	private Panel panelMessages;
 	/** Table containing the nicknames in the channel. */
@@ -41,6 +47,7 @@ public class channelGUI implements Button.ClickListener, Serializable
 	
 	public channelGUI(String channelName, String networkName, VaIRCInterface ircInterface)
 	{
+		super(channelName, ShortcutAction.KeyCode.ENTER, null);
 		this.channelName = channelName;
 		this.ircInterface = ircInterface;
 		//this.ircChannel = new IRCChannel(channelName, networkName);
@@ -52,8 +59,8 @@ public class channelGUI implements Button.ClickListener, Serializable
 	}
 	
 	/**
-	 * Adds new message to the channel textarea.
-	 * @param newMessage
+	 * Adds new message to the channel textarea, repaints the panel and scrolls to bottom.
+	 * @param newMessage Message to be added.
 	 */
 	public void addMessageToChannelTextarea(String newMessage)
 	{
@@ -61,38 +68,11 @@ public class channelGUI implements Button.ClickListener, Serializable
 			label.setContentMode(Label.CONTENT_RAW);
 			label.setWidth(550, Sizeable.UNITS_PIXELS);
 		panelMessages.addComponent(label);
-		ircInterface.pushChangesToClient();
-	}
-	
-	/**
-	 * Clears nickname table for this channel and sets sent nicknames to the table.
-	 * @param nicknames ArrayList of nicknames.
-	 */
-	public void addChannelUsersToTable(ArrayList<String> nicknames)
-	{
-		tableNicknames.removeAllItems();
-		for (String nickname : nicknames) tableNicknames.addItem(nickname);
-		ircInterface.pushChangesToClient();
-	}
-	
-	/**
-	 * Adds user to channel table.
-	 * User will only be added if it did exist.
-	 * @param nickname Nickname to be added.
-	 */
-	public void addUserToChannel(String nickname)
-	{
-		tableNicknames.addItem(nickname);
-		ircInterface.pushChangesToClient();
-	}
-	
-	/**
-	 * Removes user from channel table if it did exist there.
-	 * @param nickname Nickname to be removed.
-	 */
-	public void removeUserFromChannel(String nickname)
-	{
-		tableNicknames.removeItem(nickname);
+		
+		panelMessages.setScrollTop(Short.MAX_VALUE);
+		panelMessages.requestRepaint();
+		
+		ircInterface.setNewActivityToTab(channelName);
 		ircInterface.pushChangesToClient();
 	}
 	
@@ -103,7 +83,54 @@ public class channelGUI implements Button.ClickListener, Serializable
 	public String getChannelName()
 	{
 		return channelName;
-		}
+	}
+	
+	/**
+	 * Clears nickname table for this channel and sets sent nicknames to the table.
+	 * @param nicknames ArrayList of nicknames.
+	 */
+	public void addChannelUsersToTable(ArrayList<String> nicknames)
+	{
+		tableNicknames.removeAllItems();
+		for (String nickname : nicknames)
+			tableNicknames.addItem(new Object[] { nickname }, new Integer(tableNicknames.size()));
+		ircInterface.pushChangesToClient();
+	}
+	
+	/**
+	 * Adds user to channel table.
+	 * User will only be added if it did exist.
+	 * @param nickname Nickname to be added.
+	 */
+	public void addUserToChannel(String nickname)
+	{
+		// Add user to end of table
+		tableNicknames.addItem(new Object[] { nickname }, new Integer(tableNicknames.size()));
+		ircInterface.pushChangesToClient();
+	}
+	
+	/**
+	 * Removes user from channel table if it did exist there.
+	 * Deletes all found users, so if user was somehow added multiple times to table,
+	 * all the user nicknames will be removed from channel table.
+	 * @param nickname Nickname to be removed.
+	 */
+	public void removeUserFromChannel(String nickname)
+	{
+		List<Object> toDelete = new ArrayList<Object>();
+		
+		// Iterate through all table items in row Nicknames and get all found rows to list
+        for (Object id : tableNicknames.getItemIds())
+        {
+            String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
+
+            if (row.equals(nickname)) toDelete.add(id);
+        }
+        
+		// Delete all found items
+        for (Object id : toDelete) tableNicknames.removeItem(id);
+		ircInterface.pushChangesToClient();
+	}
 	
 	/**
 	 * Styles the channel GUI components.
@@ -112,6 +139,7 @@ public class channelGUI implements Button.ClickListener, Serializable
 	{
 		panelMessages.setWidth(550, Sizeable.UNITS_PIXELS);
 		panelMessages.setHeight(500, Sizeable.UNITS_PIXELS);
+		panelMessages.setScrollable(true);
 		
 		tableNicknames.setWidth(180, Sizeable.UNITS_PIXELS);
 		tableNicknames.setHeight(500, Sizeable.UNITS_PIXELS);
@@ -124,6 +152,7 @@ public class channelGUI implements Button.ClickListener, Serializable
 		// Add action listeners
 		buttonSendMessage.setStyleName("buttonSendMessage");
 		buttonSendMessage.addListener(this);
+		textfieldMessagefield.addShortcutListener(this);
 	}
 	
 	/**
@@ -146,6 +175,8 @@ public class channelGUI implements Button.ClickListener, Serializable
 		
 		panelMessages.setImmediate(true);
 		tableNicknames.setImmediate(true);
+		textfieldMessagefield.setImmediate(true);
+		tableNicknames.addContainerProperty("Nicknames", String.class, null);
 		
 		panel = new Panel();
 			panel.setCaption(channelName);
@@ -164,14 +195,22 @@ public class channelGUI implements Button.ClickListener, Serializable
 	}
 
 	/**
-	 * When button "Send" is pressed.
+	 * Sends message to server.
 	 * If text does not start with slash: adds the current message to channel GUI and writes to IRC.
 	 * If command starts with slash, directly sends the command without slash to server write buffer.
 	 */
-	public void buttonClick(ClickEvent event)
+	private void sendMessage()
 	{
 		String message = textfieldMessagefield.getValue().toString();
 		if (message == null || message.trim().equalsIgnoreCase("")) return;
+		
+		if (!ircInterface.isConnectionRunning())
+		{
+			ircInterface.receivedStatusMessage("Connection to server has not yet been established. Could not send message to server.");
+			textfieldMessagefield.setValue("");
+			ircInterface.pushChangesToClient();
+			return;
+		}
 		
 		if (message.startsWith("/"))
 		{
@@ -185,5 +224,21 @@ public class channelGUI implements Button.ClickListener, Serializable
 			ircInterface.sendMessageToChannel(channelName, message);
 		}
 		textfieldMessagefield.setValue("");
+		ircInterface.pushChangesToClient();
+	}
+	
+	/**
+	 * When button "Send" is pressed.
+	 */
+	public void buttonClick(ClickEvent event)
+	{
+		sendMessage();
+	}
+
+	@Override
+	public void handleAction(Object sender, Object target)
+	{
+		sendMessage();
+		System.out.println("handling action in channel: " + channelName);
 	}
 }

@@ -33,6 +33,17 @@ public class VaIRCInterface implements IRCInterface
 	}
 	
 	/**
+	 * Notifies that there are new activity in the channel
+	 * so that new icon and such can be set to channel tab if that channel
+	 * is not selected.
+	 * @param channelName
+	 */
+	public void setNewActivityToTab(String channelName)
+	{
+		vairc.setChannelNewActivity(channelName);
+	}
+	
+	/**
 	 * Forces server to send the latest information to client using the
 	 * ICEPush addon for Vaadin.
 	 */
@@ -47,11 +58,15 @@ public class VaIRCInterface implements IRCInterface
 	private void handleCommand(String command)
 	{
 		// QUIT
-		if (command.equalsIgnoreCase("quit"))
+		if (command.equalsIgnoreCase("QUIT"))
 		{
-			try {
-				irc.closeConnection(); }
-			catch (NoConnectionInitializedException e) {  }
+			try
+			{
+				vairc.removeAllServerTabs();
+				receivedStatusMessage("Connection to server has been closed.");
+				irc.closeConnection();
+			}
+			catch (NoConnectionInitializedException e) { receivedStatusMessage(e.getMessage()); }
 		}
 		// CONNECT
 		else if (command.equalsIgnoreCase("CONNECT"))
@@ -84,30 +99,50 @@ public class VaIRCInterface implements IRCInterface
 		this.irc = irc;
 	}
 	
+	/**
+	 * Is connection to IRC server running?
+	 * @return Returns true if connection to IRC server is running. Otherwise false.
+	 */
+	public boolean isConnectionRunning()
+	{
+		return irc.isConnectionRunning();
+	}
+	
 	public void connectToServer(IRCSession session)
 	{
 		irc.connect();
 	}
 	
-	public void sendMessageToServer(String message)
+	public boolean sendMessageToServer(String message)
 	{
 		if (message.startsWith("/")) message = message.substring(1);
 		try
 		{
-			irc.writeMessageToBuffer(message);
 			handleCommand(message);
+			irc.writeMessageToBuffer(message);
+			return true;
 		}
 		catch (NoConnectionInitializedException e)
 		{
 			System.out.println(e);
 			e.printStackTrace();
 		}
+		return false;
 	}
 	
 	public boolean sendMessageToChannel(String channel, String message)
 	{
-		irc.sendMessageToChannel(channel, message);
-		return true;
+		try
+		{
+			irc.sendMessageToChannel(channel, message);
+			return true;
+		}
+		catch (NoConnectionInitializedException e)
+		{
+			System.out.println(e);
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public boolean sendMessageToUser(String user, String message)
@@ -125,6 +160,7 @@ public class VaIRCInterface implements IRCInterface
 	public void receivedStatusMessage(String message)
 	{
 		vairc.channelMap.get("status").addMessageToChannelTextarea(message);
+		pushChangesToClient();
 	}
 	
 	public void joinedChannel(String channelName, String network)
@@ -137,7 +173,10 @@ public class VaIRCInterface implements IRCInterface
 	public void userListChanged(String channel, ArrayList<String> users)
 	{
 		if (!vairc.channelMap.containsKey(channel))
+		{
 			System.out.println("Channel cannot be found: " + channel + ". Cannot add users to channel list.");
+			return;
+		}
 		
 		vairc.channelMap.get(channel).addChannelUsersToTable(users);
 		pushChangesToClient();
