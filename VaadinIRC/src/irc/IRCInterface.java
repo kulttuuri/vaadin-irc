@@ -22,6 +22,15 @@ public abstract interface IRCInterface
 	public abstract String getCurrentChannelName();
 	
 	/**
+	 * Sets channel topic.
+	 * @param channel Name of the channel.
+	 * @param topic Topic for the channel.
+	 * @param nickname Who did change the topic.
+	 * @param notify Do we want to notify channel about the topic change? Generally we do not notify on join topic, but when user changes topic in realtime.
+	 */
+	public abstract void setChannelTopic(String channel, String topic, String nickname, boolean notify);
+	
+	/**
 	 * Sends message to IRC server using the IRC connection's write buffer.
 	 * These messages are mostly slash commands, like /JOIN #channel, remember to remove beginning slash if they are.
 	 * @see IRC#writeMessageToBuffer(String)
@@ -74,9 +83,99 @@ public abstract interface IRCInterface
 	public abstract void otherJoinedChannel(String channelName, String network, String nickname);
 	
 	/**
+	 * When user parts a channel.
+	 * @param channelName Name of the channel.
+	 * @param network Name of the network.
+	 */
+	public abstract void leftChannel(String channelName, String network);
+	
+	/**
+	 * When other user parts a channel.
+	 * @param channelName Name of the channel.
+	 * @param network Name of the network.
+	 * @param nickname Nickname of the user who parted the channel.
+	 */
+	public abstract void otherLeftChannel(String channelName, String network, String nickname);
+	
+	/**
+	 * When current user was kicked from a channel.
+	 * @param channelName Name of the channel.
+	 * @param network Name of the network.
+	 * @param reason Reason.
+	 */
+	public abstract void kickedFromChannel(String channelName, String network, String reason);
+	
+	/**
+	 * When other user was kicked from a channel.
+	 * @param channelName Name of the channel.
+	 * @param network Name of the network.
+	 * @param nickname Nickname of the user who was kicked from the channel.
+	 * @param reason Reason.
+	 */
+	public abstract void otherKickedFromChannel(String channelName, String network, String nickname, String reason);
+	
+	/**
+	 * When current user was banned from a channel.
+	 * @param channelName Name of the channel.
+	 * @param network Name of the network.
+	 * @param reason Reason.
+	 */
+	public abstract void bannedFromChannel(String channelName, String network, String reason);
+	
+	/**
+	 * When other user was banned from a channel.
+	 * @param channelName Name of the channel.
+	 * @param network Name of the network.
+	 * @param nickname Nickname of the user who was banned from the channel.
+	 * @param reason Reason.
+	 */
+	public abstract void otherBannedFromChannel(String channelName, String network, String nickname, String reason);
+	
+	/**
+	 * User did quit from network.
+	 * @param network Name of the network.
+	 */
+	public abstract void quitNetwork(String network);
+	
+	/**
+	 * Other user quit the network.
+	 * @param network Name of the network.
+	 * @param reason Quit reason.
+	 */
+	public abstract void otherQuitNetwork(String network, String reason);
+	
+	/**
 	 * When user list is changed in a channel.
 	 * @param channel Channel where the userlist was changed.
 	 * @param users ArrayList of current users in the channel.
 	 */
 	public abstract void userListChanged(String channel, ArrayList<String> users);
+	
+	/**
+	 * When user was opped in a channel.
+	 * @param channel Name of the channel.
+	 * @param nickname Nickname.
+	 */
+	public abstract void userOpped(String channel, String nickname);
+	
+	/**
+	 * When user was deopped in a channel.
+	 * @param channel Name of the channel.
+	 * @param nickname Nickname.
+	 */
+	public abstract void userDeOpped(String channel, String nickname);
+	
+	/**
+	 * When user was given voice rights in a channel.
+	 * @param channel Name of the channel.
+	 * @param nickname Nickname.
+	 */
+	public abstract void userVoiced(String channel, String nickname);
+	
+	/**
+	 * When user was taken voice rights out in a channel.
+	 * @param channel Name of the channel.
+	 * @param nickname Nickname.
+	 */
+	public abstract void userDeVoiced(String channel, String nickname);
 }

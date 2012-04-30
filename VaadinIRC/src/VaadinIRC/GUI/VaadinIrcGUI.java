@@ -1,9 +1,14 @@
 package VaadinIRC.GUI;
 
+import java.util.Iterator;
+
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.TabSheet.Tab;
 
 /**
  * GUI for VaadinIRC IRC View.
@@ -26,23 +31,38 @@ public class VaadinIrcGUI
 	}
 	
 	/**
-	 * Returns the selected channel tab name.
-	 * @return Selected channel tab name.
-	 */
-	public String getSelectedChannelName()
-	{
-		return channelTabs.getSelectedTab().getCaption();
-	}
-	
-	/**
 	 * Creates the main IRC view.
 	 */
 	private void createIrcView()
 	{
-		VerticalLayout vert = new VerticalLayout();
-		vert.setWidth(800, Sizeable.UNITS_PIXELS);
-		vert.setHeight(700, Sizeable.UNITS_PIXELS);
-			vert.addComponent(channelTabs);
-		window.addComponent(vert);
+		//VerticalLayout vert = new VerticalLayout();
+		//window.addComponent(vert);
+		//vert.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+		//vert.setHeight(100, Sizeable.UNITS_PERCENTAGE);
+			//channelTabs.setSizeFull();
+			//window.addComponent(channelTabs);
+			window.addComponent(channelTabs);
+			channelTabs.setSizeFull();
+			//vert.setExpandRatio(channelTabs, 100);
+	}
+	
+	/**
+	 * Iterates through channel tabs and returns the tab with given name.
+	 * If tab was not found, will return null.
+	 * @param tabName Name of the tab what you wish to retrieve.
+	 * @return Returns the tab with given name. If tab was not found, returns null.
+	 */
+	protected Tab getTab(String tabName)
+	{
+		Iterator<Component> i = channelTabs.getComponentIterator();
+		Tab tab;
+		while (i.hasNext())
+		{
+		    Component c = (Component)i.next();
+		    tab = channelTabs.getTab(c);
+		    // Store found tab
+		    if (tabName.equals(tab.getCaption())) return channelTabs.getTab(c);
+		}
+		return null;
 	}
 }
