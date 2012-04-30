@@ -2,6 +2,8 @@ package irc;
 
 import java.util.ArrayList;
 
+import VaadinIRC.VaadinIRC.VaIRCInterface;
+
 import irc.exceptions.NoConnectionInitializedException;
 
 public class ThreadIRCReader extends Thread
@@ -52,7 +54,7 @@ public class ThreadIRCReader extends Thread
 	        {
 	        	irc.handlePingResponse(row);
 	        }
-	        // If going through list of nicknames
+	        // List of nicknames
 	        else if (row.indexOf("353") >= 0)
             {
 	        	System.out.println("DEBUG: going through nicknames for row: " + row);
@@ -74,26 +76,95 @@ public class ThreadIRCReader extends Thread
 	            System.out.println("DEBUG: WENT THROUGH NICKNAMES");
 	            irc.GUIInterface.userListChanged(split[4], newNicks);
             }
-	        // Current user wanted to join a channel
-	        else if (row.startsWith(":" + irc.session.getNickname()) && rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND).equals("JOIN"))
+	        // Join
+	        else if (checkCommand(row, "JOIN"))
 	        {
-	        	irc.GUIInterface.joinedChannel(rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND+1), irc.session.getServer());
+	        	if (IRCHelper.getNicknameFromStdMessage(row).equals(irc.session.getNickname()))
+	        		irc.GUIInterface.joinedChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer());
+	        	else
+	        		irc.GUIInterface.otherJoinedChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer(), IRCHelper.getNicknameFromStdMessage(row));
+	        	// Wait so that channel will have time to get generated
+	        	try { Thread.sleep(1000); } catch (InterruptedException e) { }
 	        }
-	        // Other user joined current channel you are in
-	        else if (!row.startsWith(":" + irc.session.getNickname()) && rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND).equals("JOIN"))
-	        {
-	        	String[] split = row.split("!");
-	        	irc.GUIInterface.otherJoinedChannel(rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND+1), irc.session.getServer(), split[0].substring(1));
-	        }
-	        // Normal channel message
-	        else if (!row.startsWith(":" + irc.session.getNickname()) && rowSpaces.get(IRCEnums.IRC_MSG_SPACE_SPLIT_COMMAND).equals("PRIVMSG"))
+	        // Normal channel message (PRIVMSG)
+	        else if (!row.startsWith(":" + irc.session.getNickname()) && checkCommand(row, "PRIVMSG"))
             {
-	        	String[] splitMsg = row.split(":");
-	        	String[] splitNick = row.split("!");
-	        	irc.GUIInterface.receivedNewMessage(IRCHelper.generateIRCMessage(splitNick[0].substring(1), row.replace(":"+splitMsg[1], "").substring(1)), rowSpaces.get(2));
+	        	if (!IRCHelper.getNicknameFromStdMessage(row).equals(irc.session.getNickname()))
+	        		irc.GUIInterface.receivedNewMessage(IRCHelper.generateIRCMessage(IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getContentFromStdMessage(row)), IRCHelper.getChannelFromStdMessage(row));
             }
-	
+	        // Part (:VaAle101!~null@a91-152-121-162.elisa-laajakaista.fi PART #testikannu12345 :reason)
+	        else if (checkCommand(row, "PART"))
+	        {
+	        	if (IRCHelper.getNicknameFromStdMessage(row).equals(irc.session.getNickname()))
+	        		irc.GUIInterface.leftChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer());
+	        	else
+	        		irc.GUIInterface.otherLeftChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer(), IRCHelper.getNicknameFromStdMessage(row));
+	        }
+	        // Kick (:Kulttuuri!u4267@irccloud.com KICK #testikannu12345 VaAle101 :reason)
+	        else if (checkCommand(row, "KICK"))
+	        {
+	        	if (IRCHelper.getNicknameFromStdMessage(row).equals(irc.session.getNickname()))
+	        		irc.GUIInterface.kickedFromChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer(), IRCHelper.getStdReason(row));
+	        	else
+	        		irc.GUIInterface.otherKickedFromChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer(), IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getStdReason(row));
+	        }
+	        // Mode (:Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +bbb VaAle101!*@* reason!*@* viesti!*@*)
+	        else if (checkCommand(row, "MODE"))
+	        {
+	        	String mode = rowSpaces.get(3);
+	        	if (mode.startsWith("+o"))
+	        		irc.GUIInterface.userOpped(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        	if (mode.startsWith("-o"))
+	        		irc.GUIInterface.userDeOpped(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        	if (mode.startsWith("+v"))
+	        		irc.GUIInterface.userVoiced(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        	if (mode.startsWith("-v"))
+	        		irc.GUIInterface.userDeVoiced(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        }
+	        // TOPIC (:Kulttuuri!u4267@irccloud.com TOPIC #testikannu12345 :asd)
+	        else if (checkCommand(row, "TOPIC"))
+	        {
+	        	irc.GUIInterface.setChannelTopic(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getStdReason(row), IRCHelper.getNicknameFromStdMessage(row), true);
+	        }
+	        // Store channel topic on join
+	        else if (checkCommand(row, IRCEnums.RPL_NOTOPIC) || checkCommand(row, IRCEnums.RPL_TOPIC))
+	        {
+	        	irc.GUIInterface.setChannelTopic(rowSpaces.get(0), IRCHelper.getStdReason(row), IRCHelper.getNicknameFromStdMessage(row), false);
+	        }
+	        // Handle error replies
+	        handleErrorReplies(row);
+	        
+	        
+	        
 	        // TODO: Botin toiminnot.
 	    }
+    }
+    
+    /**
+     * Handles IRC sent error replies.
+     * @param row Whole IRC message.
+     */
+    private void handleErrorReplies(String row)
+    {
+        // You are not op message
+        if (checkCommand(row, IRCEnums.ERR_CHANOPRIVSNEEDED))
+        {
+        	irc.GUIInterface.sendMessageToChannel(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getStdReason(row));
+        }
+    }
+    
+    /**
+     * Checks the command that server sent to client.
+     * @param row Full IRC message row.
+     * @param message Command that should match the command sent from server. This is not case sensitive.
+     * @return Returns true if command was same that was passed. Otherwise false.
+     */
+    private boolean checkCommand(String row, String command)
+    {
+    	String getCommand = IRCHelper.getStdCommand(row);
+    	if (getCommand == null) return false;
+    	
+    	if (command.equalsIgnoreCase(getCommand)) return true;
+    	else return false;
     }
 }

@@ -1,6 +1,8 @@
 package VaadinIRC.VaadinIRC;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.vaadin.artur.icepush.ICEPush;
 
@@ -21,16 +23,6 @@ public class VaIRCInterface implements IRCInterface
 {
 	private VaadinIRC vairc;
 	private IRC irc;
-	private ICEPush pusher = new ICEPush();
-	
-	/**
-	 * Initializes ICEPush component by adding the component to application main window.
-	 * @param window Application window.
-	 */
-	public void initICEPush(Window window)
-	{
-		window.addComponent(pusher);
-	}
 	
 	/**
 	 * Notifies that there are new activity in the channel
@@ -44,12 +36,21 @@ public class VaIRCInterface implements IRCInterface
 	}
 	
 	/**
+	 * If no connection to the server has been made, this is used to send message to
+	 * status channel to inform the user about that.
+	 */
+	public void receivedNoConnectionInitializedMessage()
+	{
+		receivedStatusMessage("Connection to server has not yet been established. Could not send message to server.");
+	}
+	
+	/**
 	 * Forces server to send the latest information to client using the
 	 * ICEPush addon for Vaadin.
 	 */
 	public void pushChangesToClient()
 	{
-		if (ICEPush.getPushContext(pusher.getApplication().getContext()) != null) pusher.push();
+		vairc.pushChangesToClient();
 	}
 	
 	/**
@@ -57,23 +58,13 @@ public class VaIRCInterface implements IRCInterface
 	 */
 	private void handleCommand(String command)
 	{
-		// QUIT
-		if (command.equalsIgnoreCase("QUIT"))
-		{
-			try
-			{
-				vairc.removeAllServerTabs();
-				receivedStatusMessage("Connection to server has been closed.");
-				irc.closeConnection();
-			}
-			catch (NoConnectionInitializedException e) { receivedStatusMessage(e.getMessage()); }
-		}
 		// CONNECT
-		else if (command.equalsIgnoreCase("CONNECT"))
+		if (command.equalsIgnoreCase("CONNECT"))
 		{
 			irc.connect();
 		}
 		// NICK
+		// TODO: Check if nickname exists. Does server send new message when nick was changed?
 		else if (command.startsWith("NICK"))
 		{
 			String[] split = command.split(" ");
@@ -124,8 +115,7 @@ public class VaIRCInterface implements IRCInterface
 		}
 		catch (NoConnectionInitializedException e)
 		{
-			System.out.println(e);
-			e.printStackTrace();
+			receivedNoConnectionInitializedMessage();
 		}
 		return false;
 	}
@@ -190,8 +180,121 @@ public class VaIRCInterface implements IRCInterface
 
 	public void otherJoinedChannel(String channelName, String network, String nickname)
 	{
-		// Add user to channel if the channel exists.
-		if (vairc.channelMap.containsKey(channelName)) vairc.channelMap.get(channelName).addUserToChannel(nickname);
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.channelMap.get(channelName).addUserToChannel(nickname);
+			vairc.channelMap.get(channelName).addMessageToChannelTextarea(nickname + " joined the channel.");
+		}
 		pushChangesToClient();
+	}
+
+	public void leftChannel(String channelName, String network)
+	{
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.removeChannel(channelName);
+			vairc.channelMap.get("status").addMessageToChannelTextarea("You left the channel " + channelName);
+		}
+		pushChangesToClient();
+	}
+
+	public void otherLeftChannel(String channelName, String network, String nickname)
+	{
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.channelMap.get(channelName).removeUserFromChannel(nickname);
+			vairc.channelMap.get(channelName).addMessageToChannelTextarea(nickname + " left the channel.");
+		}
+		pushChangesToClient();
+	}
+
+	public void kickedFromChannel(String channelName, String network, String reason)
+	{
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.removeChannel(channelName);
+			vairc.channelMap.get("status").addMessageToChannelTextarea("You were kicked from channel: " + channelName + " (" + reason + ")");
+		}
+		pushChangesToClient();
+	}
+
+	public void otherKickedFromChannel(String channelName, String network, String nickname, String reason)
+	{
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.channelMap.get(channelName).removeUserFromChannel(nickname);
+			vairc.channelMap.get(channelName).addMessageToChannelTextarea(nickname + " was kicked from the channel (" + reason + ")");
+		}
+		pushChangesToClient();
+	}
+
+	public void bannedFromChannel(String channelName, String network, String reason)
+	{
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.removeChannel(channelName);
+			vairc.channelMap.get("status").addMessageToChannelTextarea("You were banned from channel (" + reason + ")");
+		}
+		pushChangesToClient();
+	}
+
+	public void otherBannedFromChannel(String channelName, String network, String nickname, String reason)
+	{
+		if (vairc.channelMap.containsKey(channelName))
+		{
+			vairc.channelMap.get(channelName).removeUserFromChannel(nickname);
+			vairc.channelMap.get(channelName).addMessageToChannelTextarea(nickname + " was banned from the channel (" + reason + ")");
+		}
+		pushChangesToClient();
+	}
+
+	public void quitNetwork(String network)
+	{
+		try
+		{
+			vairc.removeAllServerTabs();
+			receivedStatusMessage("Connection to server has been closed.");
+			irc.closeConnection();
+		}
+		catch (NoConnectionInitializedException e)
+		{
+			receivedStatusMessage(e.getMessage());
+		}
+	}
+
+	public void otherQuitNetwork(String network, String reason)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void userOpped(String channel, String nickname)
+	{
+		vairc.channelMap.get(channel).setUserLevel(nickname, "+o");
+	}
+
+	public void userDeOpped(String channel, String nickname)
+	{
+		vairc.channelMap.get(channel).setUserLevel(nickname, "-o");
+	}
+
+	public void userVoiced(String channel, String nickname)
+	{
+		vairc.channelMap.get(channel).setUserLevel(nickname, "+v");
+	}
+
+	public void userDeVoiced(String channel, String nickname)
+	{
+		vairc.channelMap.get(channel).setUserLevel(nickname, "-v");
+	}
+
+	public void setChannelTopic(String nickname, String channel, String topic, boolean notifyChannel)
+	{
+		if (vairc.channelMap.get(channel) != null)
+		{
+			vairc.channelMap.get(channel).setChannelTopic(topic);
+			if (notifyChannel)
+				vairc.channelMap.get(channel).addMessageToChannelTextarea(nickname + " changed topic to: " + topic);
+		}
 	}
 }

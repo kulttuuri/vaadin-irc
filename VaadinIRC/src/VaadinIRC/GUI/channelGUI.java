@@ -4,18 +4,27 @@ package VaadinIRC.GUI;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import VaadinIRC.VaadinIRC.VaIRCInterface;
+
+import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -26,12 +35,12 @@ import com.vaadin.ui.VerticalLayout;
  * @author Aleksi Postari
  *
  */
-public class channelGUI extends ShortcutListener implements Button.ClickListener, Serializable
+public class channelGUI implements Button.ClickListener, Serializable, Handler, ItemClickListener
 {
 	/** Name of the channel. TODO: Separate IRCChannel class? */
 	private String channelName;
-	/** Channel title text. TODO: Separate IRCChannel class? */
-	private String channelTitle;
+	/** Channel title label. */
+	private Label labelTitle;
 	/** Panel containing the channel messages. */
 	private Panel panelMessages;
 	/** Table containing the nicknames in the channel. */
@@ -44,18 +53,37 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 	private VaIRCInterface ircInterface;
 	/** Panel containing this channel's GUI */
 	private Panel panel;
+	/** Selected nickname in table of nicknames. */
+	private String selectedNickname = "";
+	/** Channel's tab object. */
+	private Tab channelTab;
+	
+	private static final Action ACTION_WHOIS = new Action("Whois");
+	private static final Action ACTION_PRIVMSG = new Action("Private chat");
+	private static final Action ACTION_OP = new Action("Op");
+	private static final Action ACTION_VOICE = new Action("Voice");
+    private static final Action[] ACTIONS_NICKNAMES = new Action[] { ACTION_WHOIS, ACTION_PRIVMSG, ACTION_OP, ACTION_VOICE };
 	
 	public channelGUI(String channelName, String networkName, VaIRCInterface ircInterface)
 	{
-		super(channelName, ShortcutAction.KeyCode.ENTER, null);
 		this.channelName = channelName;
 		this.ircInterface = ircInterface;
 		//this.ircChannel = new IRCChannel(channelName, networkName);
+		labelTitle = 			new Label("", Label.CONTENT_RAW);
 		panelMessages =			new Panel();
 		tableNicknames =		new Table();
 		textfieldMessagefield = new TextField();
 		buttonSendMessage = 	new Button("Send");
 		styleComponents();
+	}
+	
+	/**
+	 * Sets the channel's Tab object.
+	 * @param channelTab Channel Tab object.
+	 */
+	public void setChannelTab(Tab channelTab)
+	{
+		this.channelTab = channelTab;
 	}
 	
 	/**
@@ -92,8 +120,8 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 	public void addChannelUsersToTable(ArrayList<String> nicknames)
 	{
 		tableNicknames.removeAllItems();
-		for (String nickname : nicknames)
-			tableNicknames.addItem(new Object[] { nickname }, new Integer(tableNicknames.size()));
+		for (String nickname : nicknames) addUserToChannel(nickname);
+		sortNicknameTable();
 		ircInterface.pushChangesToClient();
 	}
 	
@@ -104,9 +132,37 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 	 */
 	public void addUserToChannel(String nickname)
 	{
-		// Add user to end of table
-		tableNicknames.addItem(new Object[] { nickname }, new Integer(tableNicknames.size()));
+		String userLevel = "";
+		if (nickname.startsWith("@")) { userLevel = "@"; nickname = nickname.substring(1); }
+		else if (nickname.startsWith("+")) { userLevel = "+"; nickname = nickname.substring(1); }
+		
+		tableNicknames.addItem(new Object[] { userLevel, nickname }, new Integer(tableNicknames.size()));
+		sortNicknameTable();
 		ircInterface.pushChangesToClient();
+	}
+	
+	/**
+	 * Changes given user nickname. Does not alter the user level (leaves it to the same it was before for the nickname)
+	 * @param nickname Nickname of the user without user level tag.
+	 * @param newNickname New nickname which you want the nickname to be changed to without user level tag.
+	 * @return Returns true if user was found and nickname changed. Otherwise false.
+	 */
+	public boolean changeUserNickname(String nickname, String newNickname)
+	{
+		List<Property> foundUsers = new ArrayList<Property>();
+		
+		// Iterate through all table items in row Nicknames and get all found rows to list
+        for (Object id : tableNicknames.getItemIds())
+        {
+            String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
+            if (row.equals(nickname)) foundUsers.add(tableNicknames.getContainerProperty(id, "Nicknames"));
+        }
+        
+		// Change nickname on found users.
+        for (Property id : foundUsers) id.setValue(newNickname); 
+        sortNicknameTable();
+		ircInterface.pushChangesToClient();
+		return false;
 	}
 	
 	/**
@@ -123,12 +179,12 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
         for (Object id : tableNicknames.getItemIds())
         {
             String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
-
             if (row.equals(nickname)) toDelete.add(id);
         }
         
 		// Delete all found items
         for (Object id : toDelete) tableNicknames.removeItem(id);
+        sortNicknameTable();
 		ircInterface.pushChangesToClient();
 	}
 	
@@ -137,22 +193,40 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 	 */
 	private void styleComponents()
 	{
-		panelMessages.setWidth(550, Sizeable.UNITS_PIXELS);
-		panelMessages.setHeight(500, Sizeable.UNITS_PIXELS);
-		panelMessages.setScrollable(true);
-		
-		tableNicknames.setWidth(180, Sizeable.UNITS_PIXELS);
-		tableNicknames.setHeight(500, Sizeable.UNITS_PIXELS);
-		
-		textfieldMessagefield.setWidth(672, Sizeable.UNITS_PIXELS);
-		textfieldMessagefield.setStyleName("channelMessageTextfield");
-		
-		tableNicknames.setColumnHeaderMode(Table.COLUMN_HEADER_MODE_HIDDEN);
-		
+		// Style title label
+			labelTitle.setStyleName("channelTitleLabel");
+			labelTitle.setSizeFull();
+		// Style messages panel
+			panelMessages.setSizeFull();
+			panelMessages.setHeight(300, Sizeable.UNITS_PIXELS);
+			panelMessages.setScrollable(true);
+		// Style nicknames panel
+			tableNicknames.setSizeFull();
+			tableNicknames.setColumnHeaderMode(Table.COLUMN_HEADER_MODE_HIDDEN);
+			tableNicknames.setColumnWidth("Rights", 1);
+			tableNicknames.setColumnAlignment("Rights", Table.ALIGN_RIGHT);
+			tableNicknames.setColumnAlignment("Nicknames", Table.ALIGN_LEFT);
+		// Style messagefield
+			textfieldMessagefield.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+			textfieldMessagefield.setStyleName("channelMessageTextfield");
+		// Style send message button
+			buttonSendMessage.setStyleName("buttonSendMessage");
+			
 		// Add action listeners
-		buttonSendMessage.setStyleName("buttonSendMessage");
-		buttonSendMessage.addListener(this);
-		textfieldMessagefield.addShortcutListener(this);
+			buttonSendMessage.addListener(this);
+			//textfieldMessagefield.addShortcutListener(this);
+	        getChannelGUI().addAction(new ShortcutListener(channelName, KeyCode.ENTER, null)
+	        {
+	            @Override
+	            public void handleAction(Object sender, Object target)
+	            {
+	            	sendMessage();
+	            }
+	        });
+			
+	        // Right click menu for nicknames table
+			tableNicknames.addListener((ItemClickListener)this);
+	        tableNicknames.addActionHandler((Action.Handler)this);
 	}
 	
 	/**
@@ -160,33 +234,51 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 	 */
 	private void createChannelGUI()
 	{
+		panel = new Panel();
+		panel.setCaption(channelName);
+		panel.setSizeFull();
+		AbstractLayout panelLayout = (AbstractLayout)panel.getContent();
+		panelLayout.setMargin(false);
+		panelLayout.setSizeFull();
+		panel.setImmediate(true);
+		labelTitle.setValue("<b>"+channelName+"</b>");
+		
 		VerticalLayout mainVerticalLayout = new VerticalLayout();
+			//mainVerticalLayout.addComponent(labelTitle);
+			//mainVerticalLayout.setExpandRatio(labelTitle, 1);
 		HorizontalLayout horizontal = new HorizontalLayout();
-			horizontal.setSpacing(true);
+			horizontal.setSpacing(false);
+			horizontal.setMargin(false);
+			horizontal.setSizeFull();
 			horizontal.addComponent(panelMessages);
-			horizontal.addComponent(tableNicknames);
-		mainVerticalLayout.addComponent(horizontal);
+			mainVerticalLayout.addComponent(horizontal);
+			if (!channelName.equals("status")) {
+				horizontal.addComponent(tableNicknames);
+			horizontal.setExpandRatio(panelMessages, 140);
+			horizontal.setExpandRatio(tableNicknames, 20); }
 		HorizontalLayout bottomBar = new HorizontalLayout();
+			bottomBar.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+			bottomBar.setHeight(10, Sizeable.UNITS_PERCENTAGE);
 			bottomBar.setSpacing(true);
 			bottomBar.setMargin(true, false, false, false);
 			bottomBar.addComponent(textfieldMessagefield);
 			bottomBar.addComponent(buttonSendMessage);
-		mainVerticalLayout.addComponent(bottomBar);
+			mainVerticalLayout.addComponent(bottomBar);
 		
 		panelMessages.setImmediate(true);
 		tableNicknames.setImmediate(true);
 		textfieldMessagefield.setImmediate(true);
+		tableNicknames.addContainerProperty("Rights", String.class, null);
 		tableNicknames.addContainerProperty("Nicknames", String.class, null);
+		tableNicknames.setSelectable(true);
 		
-		panel = new Panel();
-			panel.setCaption(channelName);
-			panel.setImmediate(true);
-			panel.addComponent(mainVerticalLayout);
+		//mainVerticalLayout.setSizeFull();
+		panel.addComponent(mainVerticalLayout);
 	}
 	
 	/**
 	 * Returns the panel containing reference to this channel's graphical user interface.
-	 * @return
+	 * @return Reference to channel GUI member variable.
 	 */
 	public Panel getChannelGUI()
 	{
@@ -206,7 +298,7 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 		
 		if (!ircInterface.isConnectionRunning())
 		{
-			ircInterface.receivedStatusMessage("Connection to server has not yet been established. Could not send message to server.");
+			ircInterface.receivedNoConnectionInitializedMessage();
 			textfieldMessagefield.setValue("");
 			ircInterface.pushChangesToClient();
 			return;
@@ -228,6 +320,81 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 	}
 	
 	/**
+	 * Sorts the table containing the nicknames.
+	 */
+	private void sortNicknameTable()
+	{
+		tableNicknames.sort(new Object[] { "Rights", "Nicknames" }, new boolean[] { false, false });
+	}
+	
+	/**
+	 * Sets the channel topic.
+	 * @param topic Topic.
+	 */
+	public void setChannelTopic(String topic)
+	{
+		labelTitle.setValue("<b>"+channelName + "</b> <small><small>" + topic + "</small></small>");
+		ircInterface.pushChangesToClient();
+	}
+	
+	/**
+	 * Sets level for user (opped, voiced, normal user).
+	 * @param nickname Who is going to have this change.
+	 * @param newLevel New level. This can be +o, -o, +v, -v.
+	 * @return Returns true if user was found and level changed. Otherwise false.
+	 */
+	public boolean setUserLevel(String nickname, String newLevel)
+	{
+		List<Property> foundUsers = new ArrayList<Property>();
+		
+		// Iterate through all table items in row Nicknames and get found nickname level row references to list
+        for (Object id : tableNicknames.getItemIds())
+        {
+            String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
+            if (row.equals(nickname)) foundUsers.add(tableNicknames.getContainerProperty(id, "Rights"));
+        }
+
+        // Change userlevel on found users
+        for (Property id : foundUsers)
+        {
+        	String oldLevel = id.getValue().toString();
+        	if (newLevel.startsWith("+"))
+        	{
+        		String lvl = newLevel.substring(1, 2);
+        		if (oldLevel.equals("") && lvl.equals("o")) { id.setValue("@"); addMessageToChannelTextarea("User " + nickname + " was opped."); return true; }
+        		else if (oldLevel.equals("+") && lvl.equals("v")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was voiced."); return true; }
+        		System.out.println("value: " + foundUsers.get(0).getValue() + " & new val: " + lvl);
+        		return false;
+        	}
+        	else if (newLevel.startsWith("-"))
+        	{
+        		String lvl = newLevel.substring(1, 2);
+        		if (oldLevel.equals("@") && lvl.equals("o")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was deopped."); return true; }
+        		else if (oldLevel.equals("v") && lvl.equals("v")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was devoiced."); return true; }
+        		else return false;
+        	}
+        }
+		ircInterface.pushChangesToClient();
+		return false;
+	}
+	
+	/**
+	 * Returns the given user level in the channel (op, voiced, normal user).
+	 * @param nickname Nickname of the user you want to get level for.
+	 * @return Returns the user level. @ is op, + is voiced and otherwise if normal user or was not found, will return "".
+	 */
+	@Deprecated
+	private String getUserLevel(String nickname)
+	{
+        for (Object id : tableNicknames.getItemIds())
+        {
+            String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
+            if (row.equals(nickname)) return (String)tableNicknames.getContainerProperty(id, "Rights").getValue();
+        }
+        return "";
+	}
+	
+	/**
 	 * When button "Send" is pressed.
 	 */
 	public void buttonClick(ClickEvent event)
@@ -235,10 +402,38 @@ public class channelGUI extends ShortcutListener implements Button.ClickListener
 		sendMessage();
 	}
 
-	@Override
-	public void handleAction(Object sender, Object target)
+	public Action[] getActions(Object target, Object sender)
 	{
-		sendMessage();
-		System.out.println("handling action in channel: " + channelName);
+		return ACTIONS_NICKNAMES;
+	}
+
+    public void handleAction(Action action, Object sender, Object target)
+    {
+        if (ACTION_WHOIS == action)
+        {
+            ircInterface.sendMessageToServer("/WHOIS " + selectedNickname);
+        }
+        else if (ACTION_PRIVMSG == action)
+        {
+        	ircInterface.sendMessageToServer("/QUERY " + selectedNickname);
+        }
+        else if (ACTION_OP == action)
+        {
+        	ircInterface.sendMessageToServer("/MODE " + channelName + " +o " + selectedNickname);
+        }
+        else if (ACTION_VOICE == action)
+        {
+        	ircInterface.sendMessageToServer("/MODE " + channelName + " +v " + selectedNickname);
+        }
+        ircInterface.pushChangesToClient();
+    }
+	
+	/**
+	 * When nickname row in table of nicknames is clicked.
+	 */
+	public void itemClick(ItemClickEvent event)
+	{
+		String selectedItem = event.getItem().getItemProperty("Nicknames").toString();
+		if (selectedItem != null) selectedNickname = selectedItem;
 	}
 }

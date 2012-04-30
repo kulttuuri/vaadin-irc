@@ -1,13 +1,15 @@
 package VaadinIRC;
 
 
+import org.vaadin.artur.icepush.ICEPush;
+
 import irc.IRCSession;
 import VaadinIRC.VaadinIRC.VaadinIRC;
 import com.vaadin.Application;
+import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.*;
 
 /*
- * TODO: Kannun topic captioniin (pienemmällä fontilla)
  * TODO: Toimii enter vain yhdellä kanavalla, se actionlistener ei varmaan mene kuin yhdelle nyt
  * TODO: Modal login / settings popuppi alkuun ja napista saa takaisin.
  * TODO: Kun vaihtaa nickin minä tai joku muu: DEBUG: did read line: :ASDQWEASD!~null@a91-152-121-162.elisa-laajakaista.fi NICK :testaaja
@@ -34,15 +36,38 @@ public class main extends Application
 	@Override
 	public void init()
 	{
-		// Create the main window.
-		Window main = new Window(settings.APP_NAME);
-		main.setTheme("VaIRCTheme");
-		setMainWindow(main);
+		// Create main window
+		Window window = new Window(settings.APP_NAME);
+		window.setTheme("VaIRCTheme");
+		setMainWindow(window);
+		
+		// Set main window as full. We do not set getContent as that would also take in account the disabled ICEPush component.
+		window.setSizeFull();
+		window.setStyleName("mainWindow");
+		
+		// Initialize icePush addon & add it to main window.
+		ICEPush pusher = new ICEPush();
+			pusher.setWidth(0, Sizeable.UNITS_PERCENTAGE);
+			pusher.setHeight(0, Sizeable.UNITS_PERCENTAGE);
+			pusher.setEnabled(false);
+			pusher.setVisible(false);
+			window.addComponent(pusher);
+		/*
+		Label hiddenLabel = new Label("this label is visible.");
+			hiddenLabel.setWidth(0, Sizeable.UNITS_PERCENTAGE);
+			hiddenLabel.setHeight(0, Sizeable.UNITS_PERCENTAGE);
+			hiddenLabel.setVisible(false);
+			window.addComponent(hiddenLabel);
+		
+		// Creating a new vertical layout that holds the label. This should be whole page length.
+		Label label = new Label("Label that should be the whole page height.4");
+			label.setSizeFull();
+			label.setStyleName("labelTest");
+			window.addComponent(label);*/
 		
 		// TODO: Poista kun valmis.
 		IRCSession session = new IRCSession("port80a.se.quakenet.org", 6667, "VaAle101", "VaIRC2", "VaUsr2");
-		
 		// Start VaadinIRC application.
-		VaadinIRC vaadinIRC = new VaadinIRC(main, session, (Application)this);
+		VaadinIRC vaadinIRC = new VaadinIRC(window, session, (Application)this, pusher);
 	}
 }

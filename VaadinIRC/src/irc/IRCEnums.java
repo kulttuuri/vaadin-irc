@@ -11,11 +11,24 @@ public class IRCEnums
 	public static final String CONNECT_ONNECTION_SUCCESFUL = "004";
 	/** If connection needs additional PONG <number> response from client. */
 	public static final String CONNECT_ADDITIONAL_PING_RESPONSE = "513";
-	/** If nickname contains invalid characters. */
-	public static final String CONNECT_INVALID_NICKNAME = "432";
-	/** If nickname is already in use in the network. */
-	public static final String CONNECT_NICKNAME_IN_USE = "433";
 	
-	/** Number of split index for the command name/number in IRC Messages splitted by space. */
-	public static final int IRC_MSG_SPACE_SPLIT_COMMAND = 1;
+	// #########################
+	// # GENERAL IRC RESPONSES #
+	// #########################
+	
+	/** No topic is set in the channel. */
+	public static final String RPL_NOTOPIC = "331";
+	/** Channel topic message. */
+	public static final String RPL_TOPIC = "332";
+	
+	// #################
+	// # ERROR REPLIES #
+	// #################
+	
+	/** You're not channel operator message. */
+	public static final String ERR_CHANOPRIVSNEEDED = "482";
+	/** Nickname contains invalid characters. */
+	public static final String CONNECT_INVALID_NICKNAME = "432";
+	/** Nickname is already in use in the network. */
+	public static final String CONNECT_NICKNAME_IN_USE = "433";
 }
