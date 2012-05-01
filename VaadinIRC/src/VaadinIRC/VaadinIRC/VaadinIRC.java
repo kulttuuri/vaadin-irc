@@ -62,13 +62,9 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("@Aleksi");
 		users.add("+Testaaja");
 		users.add("+vairc");
-		users.add("jani");
+		users.add("normal");
 		users.add("user");
 		ircInterface.userListChanged("#tone", users);
-		
-		ircInterface.userOpped("#tone", "normal");
-		//channelMap.get("#tone").setChannelTopic("22:27:42 testitestitesti!");
-		//ircInterface.userDeOpped("#tone", "opped");
 	}
 	
 	/**

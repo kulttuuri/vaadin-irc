@@ -20,4 +20,6 @@
 
 
     
+
+    <inherits name="org.vaadin.artur.icepush.IcepushaddonWidgetset" />
 </module>
