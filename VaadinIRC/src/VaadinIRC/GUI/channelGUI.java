@@ -12,15 +12,23 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
+import com.vaadin.event.FieldEvents.BlurEvent;
+import com.vaadin.event.FieldEvents.BlurListener;
+import com.vaadin.event.FieldEvents.FocusEvent;
+import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.terminal.ThemeResource;
+import com.vaadin.terminal.gwt.client.RenderInformation.Size;
 import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
@@ -35,7 +43,7 @@ import com.vaadin.ui.VerticalLayout;
  * @author Aleksi Postari
  *
  */
-public class channelGUI implements Button.ClickListener, Serializable, Handler, ItemClickListener
+public class channelGUI implements Button.ClickListener, Serializable, Handler, ItemClickListener, FocusListener, BlurListener
 {
 	/** Name of the channel. TODO: Separate IRCChannel class? */
 	private String channelName;
@@ -57,6 +65,8 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	private String selectedNickname = "";
 	/** Channel's tab object. */
 	private Tab channelTab;
+	/** is the message textfield focused? */
+	private boolean isMsgTextfieldFocused = false;
 	
 	private static final Action ACTION_WHOIS = new Action("Whois");
 	private static final Action ACTION_PRIVMSG = new Action("Private chat");
@@ -213,20 +223,21 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 			buttonSendMessage.setStyleName("buttonSendMessage");
 			
 		// Add action listeners
-			buttonSendMessage.addListener(this);
-			//textfieldMessagefield.addShortcutListener(this);
+			buttonSendMessage.addListener((Button.ClickListener)this);
 	        getChannelGUI().addAction(new ShortcutListener(channelName, KeyCode.ENTER, null)
 	        {
 	            @Override
 	            public void handleAction(Object sender, Object target)
 	            {
-	            	sendMessage();
+	            	if (isMsgTextfieldFocused) sendMessage();
 	            }
 	        });
 			
 	        // Right click menu for nicknames table
 			tableNicknames.addListener((ItemClickListener)this);
 	        tableNicknames.addActionHandler((Action.Handler)this);
+	        textfieldMessagefield.addListener((FocusListener)this);
+	        textfieldMessagefield.addListener((BlurListener)this);
 	}
 	
 	/**
@@ -244,18 +255,41 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 		labelTitle.setValue("<b>"+channelName+"</b>");
 		
 		VerticalLayout mainVerticalLayout = new VerticalLayout();
-			//mainVerticalLayout.addComponent(labelTitle);
-			//mainVerticalLayout.setExpandRatio(labelTitle, 1);
+		GridLayout topGrid = new GridLayout(2, 1);
+		topGrid.setStyleName("topBar");
+			topGrid.setSizeFull();
+			topGrid.addComponent(labelTitle);
+			labelTitle.setSizeFull();
+				HorizontalLayout hori = new HorizontalLayout();
+				hori.setStyleName("rightTopBar");
+				hori.setWidth(100, Sizeable.UNITS_PIXELS);
+				Button button = new Button();
+				button.setIcon(new ThemeResource("images/cog.png"));
+				button.setWidth(33, Sizeable.UNITS_PIXELS);
+				Button button2 = new Button();
+				button2.setIcon(new ThemeResource("images/arrow_refresh.png"));
+				button2.setWidth(33, Sizeable.UNITS_PIXELS);
+				Button button3 = new Button();
+				button3.setIcon(new ThemeResource("images/user_edit.png"));
+				button3.setWidth(33, Sizeable.UNITS_PIXELS);
+				hori.addComponent(button);
+				hori.addComponent(button2);
+				hori.addComponent(button3);
+				topGrid.addComponent(hori);
+			topGrid.setComponentAlignment(hori, Alignment.TOP_RIGHT);
+			mainVerticalLayout.addComponent(topGrid);
 		HorizontalLayout horizontal = new HorizontalLayout();
 			horizontal.setSpacing(false);
 			horizontal.setMargin(false);
 			horizontal.setSizeFull();
 			horizontal.addComponent(panelMessages);
 			mainVerticalLayout.addComponent(horizontal);
-			if (!channelName.equals("status")) {
+			if (!channelName.equals("status"))
+			{
 				horizontal.addComponent(tableNicknames);
-			horizontal.setExpandRatio(panelMessages, 140);
-			horizontal.setExpandRatio(tableNicknames, 20); }
+				horizontal.setExpandRatio(panelMessages, 140);
+				horizontal.setExpandRatio(tableNicknames, 20);
+			}
 		HorizontalLayout bottomBar = new HorizontalLayout();
 			bottomBar.setWidth(100, Sizeable.UNITS_PERCENTAGE);
 			bottomBar.setHeight(10, Sizeable.UNITS_PERCENTAGE);
@@ -361,16 +395,18 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
         	if (newLevel.startsWith("+"))
         	{
         		String lvl = newLevel.substring(1, 2);
-        		if (oldLevel.equals("") && lvl.equals("o")) { id.setValue("@"); addMessageToChannelTextarea("User " + nickname + " was opped."); return true; }
-        		else if (oldLevel.equals("+") && lvl.equals("v")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was voiced."); return true; }
-        		System.out.println("value: " + foundUsers.get(0).getValue() + " & new val: " + lvl);
+        		System.out.println("old value: " + oldLevel + " & new val: " + lvl);
+        		if (oldLevel.equals("") && lvl.equals("o")) { id.setValue("@"); addMessageToChannelTextarea("User " + nickname + " was opped."); sortNicknameTable(); return true; }
+        		else if (oldLevel.equals("") && lvl.equals("v")) { id.setValue("+"); addMessageToChannelTextarea("User " + nickname + " was voiced."); sortNicknameTable(); return true; }
+        		else if (oldLevel.equals("+") && lvl.equals("o")) { id.setValue("@"); addMessageToChannelTextarea("User " + nickname + " was opped."); sortNicknameTable(); return true; }
         		return false;
         	}
         	else if (newLevel.startsWith("-"))
         	{
         		String lvl = newLevel.substring(1, 2);
-        		if (oldLevel.equals("@") && lvl.equals("o")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was deopped."); return true; }
-        		else if (oldLevel.equals("v") && lvl.equals("v")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was devoiced."); return true; }
+        		if (oldLevel.equals("@") && lvl.equals("o")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was deopped."); sortNicknameTable(); return true; }
+        		else if (oldLevel.equals("v") && lvl.equals("v")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was devoiced."); sortNicknameTable(); return true; }
+        		else if (oldLevel.equals("+") && lvl.equals("v")) { id.setValue(""); addMessageToChannelTextarea("User " + nickname + " was devoiced."); sortNicknameTable(); return true; }
         		else return false;
         	}
         }
@@ -435,5 +471,15 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	{
 		String selectedItem = event.getItem().getItemProperty("Nicknames").toString();
 		if (selectedItem != null) selectedNickname = selectedItem;
+	}
+
+	public void focus(FocusEvent event)
+	{
+		isMsgTextfieldFocused = true;
+	}
+
+	public void blur(BlurEvent event)
+	{
+		isMsgTextfieldFocused = false;
 	}
 }

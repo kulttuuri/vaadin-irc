@@ -10,7 +10,6 @@ import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.*;
 
 /*
- * TODO: Toimii enter vain yhdellä kanavalla, se actionlistener ei varmaan mene kuin yhdelle nyt
  * TODO: Modal login / settings popuppi alkuun ja napista saa takaisin.
  * TODO: Kun vaihtaa nickin minä tai joku muu: DEBUG: did read line: :ASDQWEASD!~null@a91-152-121-162.elisa-laajakaista.fi NICK :testaaja
  * TODO: Turn off serialization: http://dev-answers.blogspot.com/2007/03/how-to-turn-off-tomcat-session.html

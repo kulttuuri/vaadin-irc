@@ -58,17 +58,29 @@ public class VaIRCInterface implements IRCInterface
 	 */
 	private void handleCommand(String command)
 	{
-		// CONNECT
-		if (command.equalsIgnoreCase("CONNECT"))
+		try
 		{
-			irc.connect();
+			// CONNECT
+			if (command.equalsIgnoreCase("CONNECT"))
+			{
+				irc.connect();
+			}
+			// NICK
+			// TODO: Check if nickname exists. Does server send new message when nick was changed?
+			else if (command.startsWith("NICK"))
+			{
+				String[] split = command.split(" ");
+				irc.getSession().setNickname(split[1]);
+			}
+			else if (command.startsWith("OP"))
+			{
+				command = command.replace("OP ", "");
+				irc.writeMessageToBuffer("/MODE +o " + command);
+			}
 		}
-		// NICK
-		// TODO: Check if nickname exists. Does server send new message when nick was changed?
-		else if (command.startsWith("NICK"))
+		catch (NoConnectionInitializedException e)
 		{
-			String[] split = command.split(" ");
-			irc.getSession().setNickname(split[1]);
+			receivedNoConnectionInitializedMessage();
 		}
 	}
 	
