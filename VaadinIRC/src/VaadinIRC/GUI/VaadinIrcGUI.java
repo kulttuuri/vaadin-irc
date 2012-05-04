@@ -21,6 +21,8 @@ public class VaadinIrcGUI
 	protected Window window;
 	/** Contains the channel / user conversation tabs. */
 	protected TabSheet channelTabs;
+	/** Main application layout. */
+	protected VerticalLayout mainLayout;
 	
 	public VaadinIrcGUI(Window window)
 	{
@@ -39,11 +41,15 @@ public class VaadinIrcGUI
 		//window.addComponent(vert);
 		//vert.setWidth(100, Sizeable.UNITS_PERCENTAGE);
 		//vert.setHeight(100, Sizeable.UNITS_PERCENTAGE);
-			//channelTabs.setSizeFull();
-			//window.addComponent(channelTabs);
-			window.addComponent(channelTabs);
+		//channelTabs.setSizeFull();
+		//window.addComponent(channelTabs);
+		mainLayout = new VerticalLayout();
+			mainLayout.addComponent(channelTabs);
 			channelTabs.setSizeFull();
-			//vert.setExpandRatio(channelTabs, 100);
+			mainLayout.setExpandRatio(channelTabs, 1.0f);
+			mainLayout.setSizeFull();
+		window.addComponent(mainLayout);
+		//vert.setExpandRatio(channelTabs, 100);
 	}
 	
 	/**

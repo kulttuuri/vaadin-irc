@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import VaadinIRC.VaadinIRC.VaIRCInterface;
+import VaadinIRC.VaadinIRC.VaadinIRC;
 
+import com.sun.java.swing.plaf.windows.resources.windows;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
@@ -28,6 +30,7 @@ import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -49,6 +52,12 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	private String channelName;
 	/** Channel title label. */
 	private Label labelTitle;
+	/** Settings button */
+	private Button buttonSettings;
+	/** Change nickname button */
+	private Button buttonChangeNick;
+	/** Refresh usernames button */
+	private Button buttonRefreshUsernames;
 	/** Panel containing the channel messages. */
 	private Panel panelMessages;
 	/** Table containing the nicknames in the channel. */
@@ -67,6 +76,8 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	private Tab channelTab;
 	/** is the message textfield focused? */
 	private boolean isMsgTextfieldFocused = false;
+	/** Reference to VaadinIRC */
+	VaadinIRC vaIRC;
 	
 	private static final Action ACTION_WHOIS = new Action("Whois");
 	private static final Action ACTION_PRIVMSG = new Action("Private chat");
@@ -74,16 +85,20 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	private static final Action ACTION_VOICE = new Action("Voice");
     private static final Action[] ACTIONS_NICKNAMES = new Action[] { ACTION_WHOIS, ACTION_PRIVMSG, ACTION_OP, ACTION_VOICE };
 	
-	public channelGUI(String channelName, String networkName, VaIRCInterface ircInterface)
+	public channelGUI(String channelName, String networkName, VaadinIRC vaIRC, VaIRCInterface ircInterface)
 	{
 		this.channelName = channelName;
+		this.vaIRC = vaIRC;
 		this.ircInterface = ircInterface;
 		//this.ircChannel = new IRCChannel(channelName, networkName);
-		labelTitle = 			new Label("", Label.CONTENT_RAW);
-		panelMessages =			new Panel();
-		tableNicknames =		new Table();
-		textfieldMessagefield = new TextField();
-		buttonSendMessage = 	new Button("Send");
+		labelTitle = 				new Label("", Label.CONTENT_RAW);
+		panelMessages =				new Panel();
+		tableNicknames =			new Table();
+		textfieldMessagefield = 	new TextField();
+		buttonSendMessage = 		new Button("Send");
+		buttonSettings = 			new Button("");
+		buttonChangeNick = 			new Button("");
+		buttonRefreshUsernames =	new Button("");
 		styleComponents();
 	}
 	
@@ -107,6 +122,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 			label.setWidth(550, Sizeable.UNITS_PIXELS);
 		panelMessages.addComponent(label);
 		
+		// Scroll messages panel to bottom message
 		panelMessages.setScrollTop(Short.MAX_VALUE);
 		panelMessages.requestRepaint();
 		
@@ -208,7 +224,6 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 			labelTitle.setSizeFull();
 		// Style messages panel
 			panelMessages.setSizeFull();
-			panelMessages.setHeight(300, Sizeable.UNITS_PIXELS);
 			panelMessages.setScrollable(true);
 		// Style nicknames panel
 			tableNicknames.setSizeFull();
@@ -217,10 +232,25 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 			tableNicknames.setColumnAlignment("Rights", Table.ALIGN_RIGHT);
 			tableNicknames.setColumnAlignment("Nicknames", Table.ALIGN_LEFT);
 		// Style messagefield
-			textfieldMessagefield.setWidth(100, Sizeable.UNITS_PERCENTAGE);
 			textfieldMessagefield.setStyleName("channelMessageTextfield");
+			textfieldMessagefield.setWidth(100, Sizeable.UNITS_PERCENTAGE);
 		// Style send message button
 			buttonSendMessage.setStyleName("buttonSendMessage");
+		// Style settings button
+			buttonSettings.setIcon(new ThemeResource("images/cog.png"));
+			buttonSettings.setWidth(33, Sizeable.UNITS_PIXELS);
+			buttonSettings.setDescription("Settings");
+			buttonSettings.addListener(new ClickListener() { public void buttonClick(ClickEvent event) { vaIRC.showSettingsWindow(); }});
+		// Style change nickname button
+			buttonChangeNick.setIcon(new ThemeResource("images/user_edit.png"));
+			buttonChangeNick.setWidth(33, Sizeable.UNITS_PIXELS);
+			buttonChangeNick.setDescription("Change nickname");
+			buttonChangeNick.addListener(new ClickListener() { public void buttonClick(ClickEvent event) { vaIRC.showNicknameChangeWindow(); }});
+		// Style refresh nicknames button
+			buttonRefreshUsernames.setIcon(new ThemeResource("images/arrow_refresh.png"));
+			buttonRefreshUsernames.setWidth(33, Sizeable.UNITS_PIXELS);
+			buttonRefreshUsernames.setDescription("Refresh channel usernames");
+			buttonRefreshUsernames.addListener(new ClickListener() { public void buttonClick(ClickEvent event) { refreshNicknameList(); }});
 			
 		// Add action listeners
 			buttonSendMessage.addListener((Button.ClickListener)this);
@@ -229,7 +259,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	            @Override
 	            public void handleAction(Object sender, Object target)
 	            {
-	            	if (isMsgTextfieldFocused) sendMessage();
+	            	if (isMsgTextfieldFocused) sendMessage(textfieldMessagefield.getValue().toString());
 	            }
 	        });
 			
@@ -248,56 +278,55 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 		panel = new Panel();
 		panel.setCaption(channelName);
 		panel.setSizeFull();
+		panel.getContent().setSizeFull();
 		AbstractLayout panelLayout = (AbstractLayout)panel.getContent();
 		panelLayout.setMargin(false);
-		panelLayout.setSizeFull();
 		panel.setImmediate(true);
 		labelTitle.setValue("<b>"+channelName+"</b>");
 		
 		VerticalLayout mainVerticalLayout = new VerticalLayout();
-		GridLayout topGrid = new GridLayout(2, 1);
-		topGrid.setStyleName("topBar");
-			topGrid.setSizeFull();
-			topGrid.addComponent(labelTitle);
-			labelTitle.setSizeFull();
-				HorizontalLayout hori = new HorizontalLayout();
-				hori.setStyleName("rightTopBar");
-				hori.setWidth(100, Sizeable.UNITS_PIXELS);
-				Button button = new Button();
-				button.setIcon(new ThemeResource("images/cog.png"));
-				button.setWidth(33, Sizeable.UNITS_PIXELS);
-				Button button2 = new Button();
-				button2.setIcon(new ThemeResource("images/arrow_refresh.png"));
-				button2.setWidth(33, Sizeable.UNITS_PIXELS);
-				Button button3 = new Button();
-				button3.setIcon(new ThemeResource("images/user_edit.png"));
-				button3.setWidth(33, Sizeable.UNITS_PIXELS);
-				hori.addComponent(button);
-				hori.addComponent(button2);
-				hori.addComponent(button3);
-				topGrid.addComponent(hori);
-			topGrid.setComponentAlignment(hori, Alignment.TOP_RIGHT);
-			mainVerticalLayout.addComponent(topGrid);
-		HorizontalLayout horizontal = new HorizontalLayout();
-			horizontal.setSpacing(false);
-			horizontal.setMargin(false);
-			horizontal.setSizeFull();
-			horizontal.addComponent(panelMessages);
-			mainVerticalLayout.addComponent(horizontal);
-			if (!channelName.equals("status"))
-			{
-				horizontal.addComponent(tableNicknames);
-				horizontal.setExpandRatio(panelMessages, 140);
-				horizontal.setExpandRatio(tableNicknames, 20);
-			}
-		HorizontalLayout bottomBar = new HorizontalLayout();
-			bottomBar.setWidth(100, Sizeable.UNITS_PERCENTAGE);
-			bottomBar.setHeight(10, Sizeable.UNITS_PERCENTAGE);
-			bottomBar.setSpacing(true);
-			bottomBar.setMargin(true, false, false, false);
-			bottomBar.addComponent(textfieldMessagefield);
-			bottomBar.addComponent(buttonSendMessage);
+			mainVerticalLayout.setSizeFull();
+			// Top bar containing channel title & topright buttons
+			GridLayout topGrid = new GridLayout(2, 1);
+				topGrid.setStyleName("topBar");
+				topGrid.addComponent(labelTitle);
+				topGrid.setWidth(100, Sizeable.UNITS_PIXELS);
+				labelTitle.setSizeFull();
+					HorizontalLayout hori = new HorizontalLayout();
+					hori.setStyleName("rightTopBar");
+					hori.setWidth(100, Sizeable.UNITS_PIXELS);
+					hori.addComponent(buttonSettings);
+					hori.addComponent(buttonChangeNick);
+					hori.addComponent(buttonRefreshUsernames);
+					topGrid.addComponent(hori);
+				topGrid.setComponentAlignment(hori, Alignment.TOP_RIGHT);
+				mainVerticalLayout.addComponent(topGrid);
+			// Message area & table of nicknames
+			HorizontalLayout horizontal = new HorizontalLayout();
+				horizontal.setSpacing(false);
+				horizontal.setMargin(false);
+				horizontal.setSizeFull();
+				horizontal.addComponent(panelMessages);
+				mainVerticalLayout.addComponent(horizontal);
+				if (!channelName.equals("status"))
+				{
+					horizontal.addComponent(tableNicknames);
+					horizontal.setExpandRatio(panelMessages, 0.8f);
+					horizontal.setExpandRatio(tableNicknames, 0.2f);
+				}
+			// Send message textfield & send button
+			HorizontalLayout bottomBar = new HorizontalLayout();
+				bottomBar.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+				bottomBar.setSpacing(true);
+				bottomBar.setMargin(true, false, false, false);
+				bottomBar.addComponent(textfieldMessagefield);
+				bottomBar.addComponent(buttonSendMessage);
+				bottomBar.setExpandRatio(textfieldMessagefield, 1f);
+				bottomBar.setExpandRatio(buttonSendMessage, 0f);
 			mainVerticalLayout.addComponent(bottomBar);
+			mainVerticalLayout.setExpandRatio(topGrid, 0.2f);
+			mainVerticalLayout.setExpandRatio(horizontal, 0.6f);
+			mainVerticalLayout.setExpandRatio(bottomBar, 0.2f);
 		
 		panelMessages.setImmediate(true);
 		tableNicknames.setImmediate(true);
@@ -324,10 +353,10 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	 * Sends message to server.
 	 * If text does not start with slash: adds the current message to channel GUI and writes to IRC.
 	 * If command starts with slash, directly sends the command without slash to server write buffer.
+	 * @param message Message to be sent.
 	 */
-	private void sendMessage()
+	private void sendMessage(String message)
 	{
-		String message = textfieldMessagefield.getValue().toString();
 		if (message == null || message.trim().equalsIgnoreCase("")) return;
 		
 		if (!ircInterface.isConnectionRunning())
@@ -351,6 +380,14 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 		}
 		textfieldMessagefield.setValue("");
 		ircInterface.pushChangesToClient();
+	}
+	
+	/**
+	 * Queries new list of nicknames from server.
+	 */
+	private void refreshNicknameList()
+	{
+		sendMessage("/NAMES " + channelName);
 	}
 	
 	/**
@@ -429,20 +466,33 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
         }
         return "";
 	}
-	
+
 	/**
-	 * When button "Send" is pressed.
+	 * When button is clicked.
 	 */
 	public void buttonClick(ClickEvent event)
 	{
-		sendMessage();
+		if (event.getComponent().equals(buttonSendMessage))
+		{
+			sendMessage(textfieldMessagefield.getValue().toString());
+		}
+		else if (event.getComponent().equals(buttonSettings))
+		{
+			vaIRC.showSettingsWindow();
+		}
 	}
 
+	/**
+	 * Returns the nicknames list right menu actions.
+	 */
 	public Action[] getActions(Object target, Object sender)
 	{
 		return ACTIONS_NICKNAMES;
 	}
 
+	/**
+	 * Handles the right mouse button action for user.
+	 */
     public void handleAction(Action action, Object sender, Object target)
     {
         if (ACTION_WHOIS == action)
@@ -473,11 +523,17 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 		if (selectedItem != null) selectedNickname = selectedItem;
 	}
 
+	/**
+	 * When textfield gets focus.
+	 */
 	public void focus(FocusEvent event)
 	{
 		isMsgTextfieldFocused = true;
 	}
 
+	/**
+	 * When textfield loses focus.
+	 */
 	public void blur(BlurEvent event)
 	{
 		isMsgTextfieldFocused = false;

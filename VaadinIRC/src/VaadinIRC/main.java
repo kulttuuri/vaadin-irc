@@ -10,6 +10,8 @@ import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.*;
 
 /*
+ * TODO: Kannut ei nyt p‰ivity en‰‰ reaaliajassa.
+ * TODO: oma oppaus ja voice ei toiminut irkiss‰.
  * TODO: Modal login / settings popuppi alkuun ja napista saa takaisin.
  * TODO: Kun vaihtaa nickin min‰ tai joku muu: DEBUG: did read line: :ASDQWEASD!~null@a91-152-121-162.elisa-laajakaista.fi NICK :testaaja
  * TODO: Turn off serialization: http://dev-answers.blogspot.com/2007/03/how-to-turn-off-tomcat-session.html
@@ -40,33 +42,14 @@ public class main extends Application
 		window.setTheme("VaIRCTheme");
 		setMainWindow(window);
 		
-		// Set main window as full. We do not set getContent as that would also take in account the disabled ICEPush component.
+		// Set main window to full size.
 		window.setSizeFull();
+		window.getContent().setSizeFull();
 		window.setStyleName("mainWindow");
-		
-		// Initialize icePush addon & add it to main window.
-		ICEPush pusher = new ICEPush();
-			pusher.setWidth(0, Sizeable.UNITS_PERCENTAGE);
-			pusher.setHeight(0, Sizeable.UNITS_PERCENTAGE);
-			pusher.setEnabled(false);
-			pusher.setVisible(false);
-			window.addComponent(pusher);
-		/*
-		Label hiddenLabel = new Label("this label is visible.");
-			hiddenLabel.setWidth(0, Sizeable.UNITS_PERCENTAGE);
-			hiddenLabel.setHeight(0, Sizeable.UNITS_PERCENTAGE);
-			hiddenLabel.setVisible(false);
-			window.addComponent(hiddenLabel);
-		
-		// Creating a new vertical layout that holds the label. This should be whole page length.
-		Label label = new Label("Label that should be the whole page height.4");
-			label.setSizeFull();
-			label.setStyleName("labelTest");
-			window.addComponent(label);*/
 		
 		// TODO: Poista kun valmis.
 		IRCSession session = new IRCSession("port80a.se.quakenet.org", 6667, "VaAle101", "VaIRC2", "VaUsr2");
 		// Start VaadinIRC application.
-		VaadinIRC vaadinIRC = new VaadinIRC(window, session, (Application)this, pusher);
+		VaadinIRC vaadinIRC = new VaadinIRC(window, session, (Application)this);
 	}
 }

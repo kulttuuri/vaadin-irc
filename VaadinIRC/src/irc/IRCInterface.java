@@ -152,30 +152,30 @@ public abstract interface IRCInterface
 	public abstract void userListChanged(String channel, ArrayList<String> users);
 	
 	/**
-	 * When user was opped in a channel.
+	 * When users were opped in a channel.
 	 * @param channel Name of the channel.
-	 * @param nickname Nickname.
+	 * @param nickname List of nicknames.
 	 */
-	public abstract void userOpped(String channel, String nickname);
+	public abstract void usersOpped(String channel, ArrayList<String> nicknames);
 	
 	/**
-	 * When user was deopped in a channel.
+	 * When usesr were deopped in a channel.
 	 * @param channel Name of the channel.
 	 * @param nickname Nickname.
 	 */
-	public abstract void userDeOpped(String channel, String nickname);
+	public abstract void usersDeOpped(String channel, ArrayList<String> nicknames);
 	
 	/**
-	 * When user was given voice rights in a channel.
+	 * When users were given voice in a channel.
 	 * @param channel Name of the channel.
 	 * @param nickname Nickname.
 	 */
-	public abstract void userVoiced(String channel, String nickname);
+	public abstract void usersVoiced(String channel, ArrayList<String> nicknames);
 	
 	/**
-	 * When user was taken voice rights out in a channel.
+	 * When users were devoiced in a channel.
 	 * @param channel Name of the channel.
 	 * @param nickname Nickname.
 	 */
-	public abstract void userDeVoiced(String channel, String nickname);
+	public abstract void usersDeVoiced(String channel, ArrayList<String> nicknames);
 }
