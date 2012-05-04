@@ -77,6 +77,21 @@ public class VaIRCInterface implements IRCInterface
 				command = command.replace("OP ", "");
 				irc.writeMessageToBuffer("/MODE +o " + command);
 			}
+			else if (command.startsWith("DEOP"))
+			{
+				command = command.replace("DEOP ", "");
+				irc.writeMessageToBuffer("/MODE -o " + command);
+			}
+			else if (command.startsWith("VOICE"))
+			{
+				command = command.replace("VOICE ", "");
+				irc.writeMessageToBuffer("/MODE +v " + command);
+			}
+			else if (command.startsWith("DEVOICE"))
+			{
+				command = command.replace("DEVOICE ", "");
+				irc.writeMessageToBuffer("/MODE -v " + command);
+			}
 		}
 		catch (NoConnectionInitializedException e)
 		{
@@ -280,24 +295,24 @@ public class VaIRCInterface implements IRCInterface
 		
 	}
 
-	public void userOpped(String channel, String nickname)
+	public void usersOpped(String channel, ArrayList<String> nicknames)
 	{
-		vairc.channelMap.get(channel).setUserLevel(nickname, "+o");
+		for (String nickname : nicknames) { System.out.println("opping " + nickname + " in chan " + channel); vairc.channelMap.get(channel).setUserLevel(nickname, "+o"); }
 	}
 
-	public void userDeOpped(String channel, String nickname)
+	public void usersDeOpped(String channel, ArrayList<String> nicknames)
 	{
-		vairc.channelMap.get(channel).setUserLevel(nickname, "-o");
+		for (String nickname : nicknames) vairc.channelMap.get(channel).setUserLevel(nickname, "-o");
 	}
 
-	public void userVoiced(String channel, String nickname)
+	public void usersVoiced(String channel, ArrayList<String> nicknames)
 	{
-		vairc.channelMap.get(channel).setUserLevel(nickname, "+v");
+		for (String nickname : nicknames) vairc.channelMap.get(channel).setUserLevel(nickname, "+v");
 	}
 
-	public void userDeVoiced(String channel, String nickname)
+	public void usersDeVoiced(String channel, ArrayList<String> nicknames)
 	{
-		vairc.channelMap.get(channel).setUserLevel(nickname, "-v");
+		for (String nickname : nicknames) vairc.channelMap.get(channel).setUserLevel(nickname, "-v");
 	}
 
 	public void setChannelTopic(String nickname, String channel, String topic, boolean notifyChannel)

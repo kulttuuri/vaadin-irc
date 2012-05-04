@@ -29,6 +29,29 @@ public class IRCHelper
 		}
 	}
 	
+	/**
+	 * Gets target users for server sent /MODE message.<br>
+	 * Example: :Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +o VaAle101
+	 * @param row IRC row.
+	 * @return Returns the target users in ArrayList.
+	 */
+	public static ArrayList<String> getModeTargetUsers(String row)
+	{
+		ArrayList<String> returnList = new ArrayList<String>();
+		ArrayList<String> spaceSplit = splitCommandsToList(row, " ");
+		try
+		{
+			if (spaceSplit.get(4) != null) returnList.add(spaceSplit.get(4));
+			if (spaceSplit.get(5) != null) returnList.add(spaceSplit.get(5));
+			if (spaceSplit.get(6) != null) returnList.add(spaceSplit.get(6));
+		}
+		catch (Exception e)
+		{
+			return returnList;
+		}
+		return returnList;
+	}
+	
 	public static String getStdReason(String row)
 	{
 		String reason = getContentFromStdMessage(row);

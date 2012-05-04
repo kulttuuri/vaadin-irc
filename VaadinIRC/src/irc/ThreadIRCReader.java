@@ -113,13 +113,13 @@ public class ThreadIRCReader extends Thread
 	        {
 	        	String mode = rowSpaces.get(3);
 	        	if (mode.startsWith("+o"))
-	        		irc.GUIInterface.userOpped(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        		irc.GUIInterface.usersOpped(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getModeTargetUsers(row));
 	        	if (mode.startsWith("-o"))
-	        		irc.GUIInterface.userDeOpped(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        		irc.GUIInterface.usersDeOpped(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getModeTargetUsers(row));
 	        	if (mode.startsWith("+v"))
-	        		irc.GUIInterface.userVoiced(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        		irc.GUIInterface.usersVoiced(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getModeTargetUsers(row));
 	        	if (mode.startsWith("-v"))
-	        		irc.GUIInterface.userDeVoiced(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getNicknameFromStdMessage(row));
+	        		irc.GUIInterface.usersDeVoiced(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getModeTargetUsers(row));
 	        }
 	        // TOPIC (:Kulttuuri!u4267@irccloud.com TOPIC #testikannu12345 :asd)
 	        else if (checkCommand(row, "TOPIC"))
