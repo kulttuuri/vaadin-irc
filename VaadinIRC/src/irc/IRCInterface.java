@@ -132,6 +132,12 @@ public abstract interface IRCInterface
 	public abstract void otherBannedFromChannel(String channelName, String network, String nickname, String reason);
 	
 	/**
+	 * When user receives error message from server (codes 400-599)
+	 * @param error Error message.
+	 */
+	public abstract void receivedErrorMessage(String error);
+	
+	/**
 	 * User did quit from network.
 	 * @param network Name of the network.
 	 */

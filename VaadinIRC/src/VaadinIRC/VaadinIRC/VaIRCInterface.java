@@ -324,4 +324,10 @@ public class VaIRCInterface implements IRCInterface
 				vairc.channelMap.get(channel).addMessageToChannelTextarea(nickname + " changed topic to: " + topic);
 		}
 	}
+
+	public void receivedErrorMessage(String error)
+	{
+		// TODO: N‰ytt‰m‰‰n popuppi
+		receivedStatusMessage(error);
+	}
 }
