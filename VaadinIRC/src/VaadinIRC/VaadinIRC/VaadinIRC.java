@@ -56,7 +56,9 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		else ircInterface.connectToServer(session);
 	}
 	
-	private boolean debug = true;
+	/** Used for debug purposes. */
+	private boolean debug = false;
+	/** Used for debug purposes. */
 	public void debug(IRCSession session)
 	{
 		createChannel("#tone", "");

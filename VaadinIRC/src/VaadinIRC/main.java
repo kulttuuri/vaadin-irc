@@ -10,6 +10,8 @@ import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.*;
 
 /*
+ * TODO: Error replies: http://www.irchelp.org/irchelp/rfc/chapter6.html#c6_3
+ * TODO: Siirr‰ icepush jutut pois interfacesta.
  * TODO: Kannut ei nyt p‰ivity en‰‰ reaaliajassa.
  * TODO: oma oppaus ja voice ei toiminut irkiss‰.
  * TODO: Modal login / settings popuppi alkuun ja napista saa takaisin.
@@ -19,7 +21,6 @@ import com.vaadin.ui.*;
  * TODO: Oma nimimerkki n‰kym‰‰n jonnekkin ja helposti vaihdettavaksi.
  * TODO: Settings valikko.
  * TODO: Settingsist‰ pituus ja korkeus (ja prossina vai pikselein‰)
- * TODO: Katso voiko tehd‰ oman actionlistenerin VaIRCInterfaceen
  * TODO: Linkit ei toimi kanavan viesteiss‰.
  * TODO: poista html tagit kanavan viesteist‰.
  */

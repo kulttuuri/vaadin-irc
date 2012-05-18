@@ -5,20 +5,24 @@ import java.util.ArrayList;
 import VaadinIRC.VaadinIRC.VaIRCInterface;
 
 import irc.exceptions.NoConnectionInitializedException;
+import irc.msghandlers.HandleIrcErrorReplies;
 
 public class ThreadIRCReader extends Thread
 {
     /** Reference to IRC class. */
     IRC irc;
-
+    /** Error message handler. */
+    HandleIrcErrorReplies errorHandler;
+    
     /**
      * Constructor to create new reader thread.
      * @param irc Reference to IRC.
      */
     public ThreadIRCReader(IRC irc)
-        {
-        this.irc = irc;
-        }
+    {
+	this.irc = irc;
+	errorHandler = new HandleIrcErrorReplies(irc.GUIInterface);
+    }
 
     /**
      * Thread is running here.
@@ -132,25 +136,12 @@ public class ThreadIRCReader extends Thread
 	        	irc.GUIInterface.setChannelTopic(rowSpaces.get(0), IRCHelper.getStdReason(row), IRCHelper.getNicknameFromStdMessage(row), false);
 	        }
 	        // Handle error replies
-	        handleErrorReplies(row);
+	        errorHandler.handleLine(row);
 	        
 	        
 	        
 	        // TODO: Botin toiminnot.
 	    }
-    }
-    
-    /**
-     * Handles IRC sent error replies.
-     * @param row Whole IRC message.
-     */
-    private void handleErrorReplies(String row)
-    {
-        // You are not op message
-        if (checkCommand(row, IRCEnums.ERR_CHANOPRIVSNEEDED))
-        {
-        	irc.GUIInterface.sendMessageToChannel(IRCHelper.getChannelFromStdMessage(row), IRCHelper.getStdReason(row));
-        }
     }
     
     /**
