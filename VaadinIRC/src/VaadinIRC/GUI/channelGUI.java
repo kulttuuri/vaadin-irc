@@ -267,8 +267,10 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 		// Style messagefield
 			textfieldMessagefield.setStyleName("channelMessageTextfield");
 			textfieldMessagefield.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+			textfieldMessagefield.setHeight(100, Sizeable.UNITS_PERCENTAGE);
 		// Style send message button
 			buttonSendMessage.setStyleName("buttonSendMessage");
+			buttonSendMessage.setHeight(100, Sizeable.UNITS_PERCENTAGE);
 		// Style settings button
 			buttonSettings.setIcon(new ThemeResource("images/cog.png"));
 			buttonSettings.setWidth(33, Sizeable.UNITS_PIXELS);
@@ -304,7 +306,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	}
 	
 	/**
-	 * Creates the channel GUI.
+	 * Creates the GUI for a channel.
 	 */
 	private void createChannelGUI()
 	{
@@ -323,7 +325,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 			GridLayout topGrid = new GridLayout(2, 1);
 				topGrid.setStyleName("topBar");
 				topGrid.addComponent(labelTitle);
-				topGrid.setWidth(100, Sizeable.UNITS_PIXELS);
+				topGrid.setSizeFull();
 				labelTitle.setSizeFull();
 					HorizontalLayout hori = new HorizontalLayout();
 					hori.setStyleName("rightTopBar");
@@ -334,6 +336,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 					topGrid.addComponent(hori);
 				topGrid.setComponentAlignment(hori, Alignment.TOP_RIGHT);
 				mainVerticalLayout.addComponent(topGrid);
+				mainVerticalLayout.setExpandRatio(topGrid, 0.05f);
 			// Message area & table of nicknames
 			HorizontalLayout horizontal = new HorizontalLayout();
 				horizontal.setSpacing(false);
@@ -341,6 +344,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 				horizontal.setSizeFull();
 				horizontal.addComponent(panelMessages);
 				mainVerticalLayout.addComponent(horizontal);
+				mainVerticalLayout.setExpandRatio(horizontal, 0.90f);
 				if (!channelName.equals("status"))
 				{
 					horizontal.addComponent(tableNicknames);
@@ -349,18 +353,18 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 				}
 			// Send message textfield & send button
 			HorizontalLayout bottomBar = new HorizontalLayout();
-				bottomBar.setWidth(100, Sizeable.UNITS_PERCENTAGE);
-				bottomBar.setSpacing(true);
-				bottomBar.setMargin(true, false, false, false);
+				//bottomBar.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+				bottomBar.setSizeFull();
+				//bottomBar.setSpacing(true);
+				//bottomBar.setMargin(true, false, false, false);
 				bottomBar.addComponent(textfieldMessagefield);
 				bottomBar.addComponent(buttonSendMessage);
 				bottomBar.setExpandRatio(textfieldMessagefield, 1f);
 				bottomBar.setExpandRatio(buttonSendMessage, 0f);
 			mainVerticalLayout.addComponent(bottomBar);
-			mainVerticalLayout.setExpandRatio(topGrid, 0.2f);
-			mainVerticalLayout.setExpandRatio(horizontal, 0.6f);
-			mainVerticalLayout.setExpandRatio(bottomBar, 0.2f);
+			mainVerticalLayout.setExpandRatio(bottomBar, 0.05f);
 		
+		horizontal.setImmediate(true);
 		panelMessages.setImmediate(true);
 		tableNicknames.setImmediate(true);
 		textfieldMessagefield.setImmediate(true);

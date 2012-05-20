@@ -44,6 +44,11 @@ public class GUIWindowChangeNickname extends AbstractWindowGUI
 		buttonChangeNick.addListener(new Button.ClickListener() { public void buttonClick(ClickEvent event) { changeNickname(textfieldNickname.getValue().toString()); } });
 	}
 
+	/**
+	 * Used to change users nickname.<br>
+	 * Verifies that IRC connection is running and that username contains only allowed characters.
+	 * @param newNick New nickname for the user.
+	 */
 	private void changeNickname(String newNick)
 	{
 		if (newNick.equals(session.getNickname()))
