@@ -57,7 +57,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	}
 	
 	/** Used for debug purposes. */
-	private boolean debug = false;
+	private boolean debug = true;
 	/** Used for debug purposes. */
 	public void debug(IRCSession session)
 	{
@@ -69,6 +69,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("normal");
 		users.add("user");
 		ircInterface.userListChanged("#tone", users);
+		channelMap.get("#tone").addMessageToChannelTextarea("linkki: http://www.google.com asd <b>bold</b>");
 	}
 	
 	/**

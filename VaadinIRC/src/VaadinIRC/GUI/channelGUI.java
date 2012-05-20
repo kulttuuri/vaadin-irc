@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import VaadinIRC.VaadinIRC.VaIRCInterface;
 import VaadinIRC.VaadinIRC.VaadinIRC;
@@ -112,11 +114,42 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	}
 	
 	/**
+	 * Removes tags from a given string and returns the parsed string.<br>
+	 * Example tags: <b>, </b>, <p>, <br/> ...
+	 * @param string Target String.
+	 * @return Returns the String where all the tags have been parsed.
+	 */
+	private String removeTags(String string)
+	{
+	    if (string == null || string.length() == 0) return string;
+	    
+	    Pattern REMOVE_TAGS = Pattern.compile("<.+?>");
+	    Matcher m = REMOVE_TAGS.matcher(string);
+	    return m.replaceAll("");
+	}
+	
+	/**
+	 * Converts URLs to html links.<br>
+	 * example: www.google.com => <a href="www.google.com">www.google.com</a>
+	 * @param text Target text.
+	 * @return Returns the text where all urls have been converted into HTML links.
+	 */
+	private String convertURLsToHTMLLinks(String text)
+	{
+	    if (text == null) return text;
+	    
+	    return text.replaceAll("(\\A|\\s)((http|https|ftp|mailto):\\S+)(\\s|\\z)", "$1<a target=\"_blank\" href=\"$2\">$2</a>$4");
+	}
+	
+	/**
 	 * Adds new message to the channel textarea, repaints the panel and scrolls to bottom.
 	 * @param newMessage Message to be added.
 	 */
 	public void addMessageToChannelTextarea(String newMessage)
 	{
+		newMessage = removeTags(newMessage);
+		newMessage = convertURLsToHTMLLinks(newMessage);
+		
 		Label label = new Label(newMessage);
 			label.setContentMode(Label.CONTENT_RAW);
 			label.setWidth(550, Sizeable.UNITS_PIXELS);
