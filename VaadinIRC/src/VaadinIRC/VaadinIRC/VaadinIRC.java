@@ -85,7 +85,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	 */
 	public void showSettingsWindow()
 	{
-		new GUIWindowSettings(window);
+		new GUIWindowSettings(window, session, ircInterface);
 	}
 	
 	/**

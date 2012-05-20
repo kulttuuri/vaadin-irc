@@ -21,8 +21,6 @@ import com.vaadin.ui.*;
  * TODO: Oma nimimerkki n‰kym‰‰n jonnekkin ja helposti vaihdettavaksi.
  * TODO: Settings valikko.
  * TODO: Settingsist‰ pituus ja korkeus (ja prossina vai pikselein‰)
- * TODO: Linkit ei toimi kanavan viesteiss‰.
- * TODO: poista html tagit kanavan viesteist‰.
  */
 
 /**

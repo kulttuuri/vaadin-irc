@@ -327,7 +327,7 @@ public class VaIRCInterface implements IRCInterface
 
 	public void receivedErrorMessage(String error)
 	{
-		// TODO: N‰ytt‰m‰‰n popuppi
+		System.out.println("Error: " + error);
 		receivedStatusMessage(error);
 	}
 }
