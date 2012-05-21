@@ -3,7 +3,10 @@ package VaadinIRC.GUI;
 import irc.IRCInterface;
 import irc.IRCSession;
 
+import VaadinIRC.settings;
+
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.terminal.UserError;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
@@ -30,6 +33,12 @@ public class GUIWindowSettings extends AbstractWindowGUI
 	/** IRC Session information */
 	private IRCSession session;
 	
+	/**
+	 * Constructor to create new settings window.
+	 * @param mainWindow Main application window.
+	 * @param session IRCSession.
+	 * @param irc IRCInterface.
+	 */
 	public GUIWindowSettings(Window mainWindow, IRCSession session, IRCInterface irc)
 	{
 		super(mainWindow);
@@ -52,20 +61,29 @@ public class GUIWindowSettings extends AbstractWindowGUI
 		addButtonDisconnect();
 	}
 	
+	/**
+	 * Adds server textfield.
+	 */
 	private void addServerTextfield()
 	{
-		addComponent(new Label("Server Address:"));
-		textfieldServer = new TextField();
+		textfieldServer = new TextField("Server Address:");
+		textfieldServer.setValue(settings.DEFAULT_SERVER_ADDRESS);
 		addComponent(textfieldServer);
 	}
 	
+	/**
+	 * Adds server port textfield.
+	 */
 	private void addServerPortTextfield()
 	{
-		addComponent(new Label("Server Port:"));
-		textfieldPort = new TextField();
+		textfieldPort = new TextField("Server Port:");
+		textfieldPort.setValue(Integer.toString(settings.DEFAULT_SERVER_PORT));
 		addComponent(textfieldPort);
 	}
 	
+	/**
+	 * Adds connect button.
+	 */
 	private void addButtonConnect()
 	{
 		buttonConnect = new Button("Connect to Server");
@@ -73,6 +91,9 @@ public class GUIWindowSettings extends AbstractWindowGUI
 		addComponent(buttonConnect);
 	}
 	
+	/**
+	 * Adds disconnect button.
+	 */
 	private void addButtonDisconnect()
 	{
 		addComponent(new Label("---"));
@@ -81,14 +102,46 @@ public class GUIWindowSettings extends AbstractWindowGUI
 		addComponent(buttonDisconnect);
 	}
 	
+	/**
+	 * To disconnect from IRC network.
+	 */
 	private void disconnectFromServer()
 	{
 		irc.quitNetwork(session.getServer());
 		close();
 	}
 	
+	/**
+	 * To connect to IRC server.
+	 */
 	private void connectToServer()
 	{
+		// Validate server
+		if (textfieldServer.getValue() == null || textfieldServer.getValue().toString().trim().equals(""))
+		{
+			textfieldServer.setComponentError(new UserError("Server cannot be empty."));
+			return;
+		}
+		textfieldServer.setComponentError(null);
+		
+		// Validate port
+		try
+		{
+			session.setServerPort(Integer.parseInt(textfieldPort.getValue().toString()));
+		}
+		catch (NumberFormatException e)
+		{
+			textfieldPort.setComponentError(new UserError("Port must be "));
+		}
+		if (textfieldPort.getValue() == null || textfieldPort.getValue().toString().trim().equals(""))
+		{
+			textfieldPort.setComponentError(new UserError("Port cannot be empty."));
+			return;
+		}
+		textfieldPort.setComponentError(null);
+		
+		// If no problems, store values to session and connect to server.
+		session.setServer(textfieldServer.getValue().toString());
 		irc.connectToServer(session);
 		close();
 	}

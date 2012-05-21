@@ -280,7 +280,6 @@ public class VaIRCInterface implements IRCInterface
 		try
 		{
 			vairc.removeAllServerTabs();
-			receivedStatusMessage("Connection to server has been closed.");
 			irc.closeConnection();
 		}
 		catch (NoConnectionInitializedException e)
