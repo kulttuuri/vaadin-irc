@@ -80,7 +80,6 @@ public class ThreadIRCConnect extends Thread
         // Create new buffered reader of the connection
         irc.reader = new BufferedReader(new InputStreamReader(irc.socket.getInputStream()));
 
-        irc.setConnectionRunning(true);
         // Connect to IRC Server
         try
         {
@@ -129,7 +128,8 @@ public class ThreadIRCConnect extends Thread
         }
 
         irc.GUIInterface.receivedStatusMessage("Connected to network: " + irc.session.getServer() + " through port " + irc.session.getServerPort());
-
+        irc.setConnectionRunning(true);
+        
         // Start thread for reading IRC messages
         irc.threadIRCReader = new ThreadIRCReader(irc);
         irc.threadIRCReader.start();
