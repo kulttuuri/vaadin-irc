@@ -122,7 +122,9 @@ public class IRCHelper
 	 * @param nick Nickname.
 	 * @param message Message.
 	 * @return Returns the generated channel message as an string.
+	 * @deprecated Because html tags are being removed from all messages.
 	 */
+	@Deprecated
 	public static String generateIRCMessage(String nick, String row)
 	{
 		return "<b>" + nick + "</b> " + row;

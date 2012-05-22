@@ -87,7 +87,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	private static final Action ACTION_VOICE = new Action("Voice");
     private static final Action[] ACTIONS_NICKNAMES = new Action[] { ACTION_WHOIS, ACTION_PRIVMSG, ACTION_OP, ACTION_VOICE };
 	
-	public channelGUI(String channelName, String networkName, VaadinIRC vaIRC, VaIRCInterface ircInterface)
+	public channelGUI(String channelName, VaadinIRC vaIRC, VaIRCInterface ircInterface)
 	{
 		this.channelName = channelName;
 		this.vaIRC = vaIRC;
@@ -139,6 +139,29 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	    if (text == null) return text;
 	    
 	    return text.replaceAll("(\\A|\\s)((http|https|ftp|mailto):\\S+)(\\s|\\z)", "$1<a target=\"_blank\" href=\"$2\">$2</a>$4");
+	}
+	
+	/**
+	 * Adds standard channel message to the channel textarea. Repaints the panel and scrolls to bottom.
+	 * @param username
+	 * @param newMessage
+	 */
+	public void addStandardChannelMessage(String username, String newMessage)
+	{
+		newMessage = removeTags(newMessage);
+		newMessage = convertURLsToHTMLLinks(newMessage);
+		
+		Label label = new Label("<b>" + username + "</b> " + newMessage);
+			label.setContentMode(Label.CONTENT_RAW);
+			label.setWidth(550, Sizeable.UNITS_PIXELS);
+		panelMessages.addComponent(label);
+		
+		// Scroll messages panel to bottom message
+		panelMessages.setScrollTop(Short.MAX_VALUE);
+		panelMessages.requestRepaint();
+		
+		ircInterface.setNewActivityToTab(channelName);
+		ircInterface.pushChangesToClient();
 	}
 	
 	/**

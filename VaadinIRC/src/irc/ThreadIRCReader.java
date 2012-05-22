@@ -94,7 +94,7 @@ public class ThreadIRCReader extends Thread
 	        else if (!row.startsWith(":" + irc.session.getNickname()) && checkCommand(row, "PRIVMSG"))
             {
 	        	if (!IRCHelper.getNicknameFromStdMessage(row).equals(irc.session.getNickname()))
-	        		irc.GUIInterface.receivedNewMessage(IRCHelper.generateIRCMessage(IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getContentFromStdMessage(row)), IRCHelper.getChannelFromStdMessage(row));
+	        		irc.GUIInterface.receivedNewMessage(IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getContentFromStdMessage(row), IRCHelper.getChannelFromStdMessage(row));
             }
 	        // Part (:VaAle101!~null@a91-152-121-162.elisa-laajakaista.fi PART #testikannu12345 :reason)
 	        else if (checkCommand(row, "PART"))
@@ -111,6 +111,14 @@ public class ThreadIRCReader extends Thread
 	        		irc.GUIInterface.kickedFromChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer(), IRCHelper.getStdReason(row));
 	        	else
 	        		irc.GUIInterface.otherKickedFromChannel(IRCHelper.getChannelFromStdMessage(row), irc.session.getServer(), IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getStdReason(row));
+	        }
+	        // Nick change (:ASDQWEASD!~null@a91-152-121-162.elisa-laajakaista.fi NICK :testaaja)
+	        else if (checkCommand(row, "NICK"))
+	        {
+	        	if (IRCHelper.getNicknameFromStdMessage(row).equals(irc.session.getNickname()))
+	        		irc.GUIInterface.userChangedNickname(IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getContentFromStdMessage(row));
+	        	else
+	        		irc.GUIInterface.userChangedNickname(IRCHelper.getNicknameFromStdMessage(row), IRCHelper.getContentFromStdMessage(row));
 	        }
 	        // Mode (:Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +bbb VaAle101!*@* reason!*@* viesti!*@*)
 	        else if (checkCommand(row, "MODE"))

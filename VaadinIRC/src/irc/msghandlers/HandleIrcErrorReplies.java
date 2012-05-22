@@ -80,9 +80,11 @@ public class HandleIrcErrorReplies extends MsgHandler
 		// Go through all errors and check if line matches error line.
 		for (Map.Entry<Integer, String> entry : errorMap.entrySet())
 		{
+			System.out.println("Row indeksi: " + row.indexOf(entry.getKey()));
 			if (row.indexOf(entry.getKey()) >= 0)
 			{
 				passError(row, entry.getValue());
+				System.out.println("TODO: Found error!");
 				return true;
 			}
 		}

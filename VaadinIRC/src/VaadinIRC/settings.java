@@ -10,7 +10,7 @@ public class settings
 	/** Name of the application. */
 	public static final String APP_NAME = "VaadinIRC";
 	/** Version. */
-	public static final String VERSION = "0.1";
+	public static final String VERSION = "0.2";
 	/** Default server address. */
 	public static final String DEFAULT_SERVER_ADDRESS = "port80a.se.quakenet.org";
 	/** Default server port. */

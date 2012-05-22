@@ -8,6 +8,14 @@ package irc;
 public class IRCSession
 {
 	/**
+	 * Constructor to initialize new IRC Session information without
+	 * any preliminary information.
+	 */
+	public IRCSession()
+	{
+	}
+	
+	/**
 	 * Constructor to ititialize new IRC Session information.
 	 * @param server Server address.
 	 * @param serverPort Server port.
@@ -19,7 +27,7 @@ public class IRCSession
 		this.server = server;
 		this.serverPort = serverPort;
 		this.nickname = nickname;
-		this.login = login;
+		this.login = username;
 		this.realName = realName;
 	}
 	
