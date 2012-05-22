@@ -4,6 +4,7 @@ import irc.IRCInterface;
 import irc.IRCSession;
 
 import VaadinIRC.settings;
+import VaadinIRC.GUI.componentContainers.SettingsComponentContainer;
 
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.terminal.UserError;
@@ -18,16 +19,8 @@ import com.vaadin.ui.Button.ClickEvent;
  * @author Aleksi Postari
  *
  */
-public class GUIWindowSettings extends AbstractWindowGUI
+public class GUIWindowSettings extends SettingsComponentContainer
 {
-	/** Server textfield */
-	private TextField textfieldServer;
-	/** Port textfield */
-	private TextField textfieldPort;
-	/** Connect to server button */
-	private Button buttonConnect;
-	/** Disconnect from server button */
-	private Button buttonDisconnect;
 	/** IRC Interface */
 	private IRCInterface irc;
 	/** IRC Session information */
@@ -38,14 +31,17 @@ public class GUIWindowSettings extends AbstractWindowGUI
 	 * @param mainWindow Main application window.
 	 * @param session IRCSession.
 	 * @param irc IRCInterface.
+	 * @param askUsername Show also 
 	 */
 	public GUIWindowSettings(Window mainWindow, IRCSession session, IRCInterface irc)
 	{
 		super(mainWindow);
 		this.irc = irc;
 		this.session = session;
-		textfieldServer.setValue(session.getServer());
-		textfieldPort.setValue(Integer.toString(session.getServerPort()));
+		if (session.getServer() != null) textfieldServer.setValue(session.getServer());
+		String curPort = Integer.toString(session.getServerPort());
+		if (curPort != null && !curPort.equals("0")) textfieldPort.setValue(curPort);
+		if (session.getNickname() != null) textfieldNickname.setValue(session.getNickname());
 	}
 
 	@Override
@@ -55,66 +51,22 @@ public class GUIWindowSettings extends AbstractWindowGUI
 		setHeight(500, Sizeable.UNITS_PIXELS);
 		setWidth(400, Sizeable.UNITS_PIXELS);
 		center();
+		addtextfieldNickname();
 		addServerTextfield();
 		addServerPortTextfield();
 		addButtonConnect();
 		addButtonDisconnect();
 	}
 	
-	/**
-	 * Adds server textfield.
-	 */
-	private void addServerTextfield()
-	{
-		textfieldServer = new TextField("Server Address:");
-		textfieldServer.setValue(settings.DEFAULT_SERVER_ADDRESS);
-		addComponent(textfieldServer);
-	}
-	
-	/**
-	 * Adds server port textfield.
-	 */
-	private void addServerPortTextfield()
-	{
-		textfieldPort = new TextField("Server Port:");
-		textfieldPort.setValue(Integer.toString(settings.DEFAULT_SERVER_PORT));
-		addComponent(textfieldPort);
-	}
-	
-	/**
-	 * Adds connect button.
-	 */
-	private void addButtonConnect()
-	{
-		buttonConnect = new Button("Connect to Server");
-		buttonConnect.addListener(new Button.ClickListener() { public void buttonClick(ClickEvent event) { connectToServer(); } });
-		addComponent(buttonConnect);
-	}
-	
-	/**
-	 * Adds disconnect button.
-	 */
-	private void addButtonDisconnect()
-	{
-		addComponent(new Label("---"));
-		buttonDisconnect = new Button("Disconnect from Server");
-		buttonDisconnect.addListener(new Button.ClickListener() { public void buttonClick(ClickEvent event) { disconnectFromServer(); } });
-		addComponent(buttonDisconnect);
-	}
-	
-	/**
-	 * To disconnect from IRC network.
-	 */
-	private void disconnectFromServer()
+	@Override
+	public void buttonPressedDisconnectFromServer()
 	{
 		irc.quitNetwork(session.getServer());
 		close();
 	}
 	
-	/**
-	 * To connect to IRC server.
-	 */
-	private void connectToServer()
+	@Override
+	public void buttonPressedConnectToServer()
 	{
 		// Validate server
 		if (textfieldServer.getValue() == null || textfieldServer.getValue().toString().trim().equals(""))
@@ -139,6 +91,11 @@ public class GUIWindowSettings extends AbstractWindowGUI
 			return;
 		}
 		textfieldPort.setComponentError(null);
+		
+		// TODO: Validate nickname.
+		session.setNickname(textfieldNickname.getValue().toString());
+		session.setLogin("VaIRCUser");
+		session.setRealName("Vaadin IRC User");
 		
 		// If no problems, store values to session and connect to server.
 		session.setServer(textfieldServer.getValue().toString());

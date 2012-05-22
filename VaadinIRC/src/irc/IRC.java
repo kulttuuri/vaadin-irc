@@ -68,7 +68,7 @@ public class IRC
     public void sendMessageToChannel(String channel, String message) throws NoConnectionInitializedException
     {
 		writeMessageToBuffer("PRIVMSG " + GUIInterface.getCurrentChannelName() + " :" + message);
-        GUIInterface.receivedNewMessage(IRCHelper.generateIRCMessage(session.getNickname(), message), channel);
+        GUIInterface.receivedNewMessage(session.getNickname(), message, channel);
     }
     
     /**

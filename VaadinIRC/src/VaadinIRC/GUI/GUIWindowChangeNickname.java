@@ -2,6 +2,8 @@ package VaadinIRC.GUI;
 
 import irc.IRCSession;
 
+import VaadinIRC.GUI.componentContainers.SettingsComponentContainer;
+
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -14,12 +16,16 @@ import com.vaadin.ui.Button.ClickEvent;
  * @author Aleksi Postari
  *
  */
-public class GUIWindowChangeNickname extends AbstractWindowGUI
+public class GUIWindowChangeNickname extends SettingsComponentContainer
 {
-	private TextField textfieldNickname;
-	private Button buttonChangeNick;
+	/** IRC Session information. */
 	private IRCSession session;
 	
+	/**
+	 * Constructor to initialize new window "Change Nickname".
+	 * @param mainWindow Main application window.
+	 * @param session IRCSession information.
+	 */
 	public GUIWindowChangeNickname(Window mainWindow, IRCSession session)
 	{
 		super(mainWindow);
@@ -34,22 +40,14 @@ public class GUIWindowChangeNickname extends AbstractWindowGUI
 		center();
 		setWidth(300, Sizeable.UNITS_PIXELS);
 		setHeight(300, Sizeable.UNITS_PIXELS);
-		this.addComponent(new Label("New nickname:"));
-		textfieldNickname = new TextField();
+		addtextfieldNickname();
 		textfieldNickname.setWidth(200, Sizeable.UNITS_PIXELS);
-		this.addComponent(textfieldNickname);
 		this.addComponent(new Label("<br>", Label.CONTENT_RAW));
-		buttonChangeNick = new Button("Change nickname");
-		this.addComponent(buttonChangeNick);
-		buttonChangeNick.addListener(new Button.ClickListener() { public void buttonClick(ClickEvent event) { changeNickname(textfieldNickname.getValue().toString()); } });
+		addButtonChangeNickname();
 	}
 
-	/**
-	 * Used to change users nickname.<br>
-	 * Verifies that IRC connection is running and that username contains only allowed characters.
-	 * @param newNick New nickname for the user.
-	 */
-	private void changeNickname(String newNick)
+	@Override
+	public void buttonPressedChangeNickname(String newNick)
 	{
 		if (newNick.equals(session.getNickname()))
 		{

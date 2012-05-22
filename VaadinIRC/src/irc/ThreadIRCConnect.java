@@ -83,6 +83,7 @@ public class ThreadIRCConnect extends Thread
         // Connect to IRC Server
         try
         {
+            irc.setConnectionRunning(true);
         	irc.writeMessageToBuffer("USER " + irc.session.getLogin() + " 8 * : " + irc.session.getLogin());
         	irc.writeMessageToBuffer("NICK " + irc.session.getNickname());
         }
@@ -90,6 +91,7 @@ public class ThreadIRCConnect extends Thread
         {
         	// This should not be happening here...
         	System.out.println(e);
+        	irc.setConnectionRunning(false);
         	e.printStackTrace();
         }
         

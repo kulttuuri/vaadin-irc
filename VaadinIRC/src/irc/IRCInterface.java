@@ -48,18 +48,18 @@ public abstract interface IRCInterface
 	
 	/**
 	 * Sends message to given user.
-	 * @param user
-	 * @param message
-	 * @return Returns true if message was sent to user. Otherwise false.
+	 * @param user Target user.
+	 * @param message Message to be sent.
 	 */
-	public abstract boolean sendMessageToUser(String user, String message);
+	public abstract void sendMessageToUser(String user, String message);
 	
 	/**
 	 * When IRC Client receives a new message.
+	 * @param nickname Message sender's nickname.
 	 * @param message The message that was received.
 	 * @param channel Channel where the message was received.
 	 */
-	public abstract void receivedNewMessage(String message, String channel);
+	public abstract void receivedNewMessage(String nickname, String message, String channel);
 	
 	/**
 	 * When user receives message that will need to be added to status channels messages.
@@ -149,6 +149,20 @@ public abstract interface IRCInterface
 	 * @param reason Quit reason.
 	 */
 	public abstract void otherQuitNetwork(String network, String reason);
+	
+	/**
+	 * When other user changes nickname.
+	 * @param oldNickname Old nickname.
+	 * @param newNickname New nickname
+	 */
+	public abstract void otherChangedNickname(String oldNickname, String newNickname);
+	
+	/**
+	 * When current user changes nickname.
+	 * @param oldNickname Old nickname.
+	 * @param newNickname New nickname.
+	 */
+	public abstract void userChangedNickname(String oldNickname, String newNickname);
 	
 	/**
 	 * When user list is changed in a channel.
