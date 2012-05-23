@@ -3,6 +3,7 @@ package irc;
 import irc.exceptions.NoConnectionInitializedException;
 import java.io.*;
 import java.net.*;
+import VaadinIRC.settings;
 
 /**
  * Base class for initialing a IRC connection.
@@ -35,11 +36,25 @@ public class IRC
      * @param session Session containing the IRC user and server information.
      */
     public IRC(IRCInterface GUIInterface, IRCSession session)
-        {
+    {
     	this.GUIInterface = GUIInterface;
     	this.session = session;
-        }
+    }
 
+    /**
+     * Debug function. Used to send messages for irc reader to be handled.
+     * @param message Message to be sent.
+     */
+    public void debugSendMessageToReader(String message)
+    {
+    	if (threadIRCReader == null)
+    	{
+            threadIRCReader = new ThreadIRCReader(this);
+            threadIRCReader.start();
+    	}
+    	threadIRCReader.handleCommand(message);
+    }
+    
     /**
      * Returns the IRC Session.
      * @return IRCSession.
@@ -72,18 +87,18 @@ public class IRC
     }
     
     /**
-     * Checks if connection to IRC server is still running.
+     * Checks if connection to IRC server is still running.<br>
+     * If debug is set to true, will always return true.
      * @return Returns true if connection to IRC server is still on. Otherwise false.
      */
     public boolean isConnectionRunning()
     {
-    	return isRunning;
+    	return GUIInterface.isDebugEnabled() == true ? true : isRunning;
     }
     
     /**
-     * Sets connection state.
-     * @param state
-     * @return
+     * Sets connection state (running or not running).
+     * @param state Connection state.
      */
     public void setConnectionRunning(boolean state)
     {

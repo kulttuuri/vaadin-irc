@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import VaadinIRC.settings;
+import VaadinIRC.GUI.componentContainers.ChannelGUIComponentContainer;
 import VaadinIRC.VaadinIRC.VaIRCInterface;
 import VaadinIRC.VaadinIRC.VaadinIRC;
 
@@ -44,40 +46,15 @@ import com.vaadin.ui.VerticalLayout;
 
 /**
  * GUI for VaadinIRC channel.
- * Contains the channel textfield, namelist and 
  * @author Aleksi Postari
  *
  */
-public class channelGUI implements Button.ClickListener, Serializable, Handler, ItemClickListener, FocusListener, BlurListener
+public class channelGUI extends ChannelGUIComponentContainer implements Button.ClickListener, Serializable, Handler, ItemClickListener, FocusListener, BlurListener
 {
-	/** Name of the channel. TODO: Separate IRCChannel class? */
+	/** Name of the channel. */
 	private String channelName;
-	/** Channel title label. */
-	private Label labelTitle;
-	/** Settings button */
-	private Button buttonSettings;
-	/** Change nickname button */
-	private Button buttonChangeNick;
-	/** Refresh usernames button */
-	private Button buttonRefreshUsernames;
-	/** Panel containing the channel messages. */
-	private Panel panelMessages;
-	/** Table containing the nicknames in the channel. */
-	private Table tableNicknames;
-	/** Textfield which will be used to write the message. */
-	private TextField textfieldMessagefield;
-	/** Button to send the message to channel or to IRC as an command. */
-	private Button buttonSendMessage;
 	/** Reference to IRCInterface. */
 	private VaIRCInterface ircInterface;
-	/** Panel containing this channel's GUI */
-	private Panel panel;
-	/** Selected nickname in table of nicknames. */
-	private String selectedNickname = "";
-	/** Channel's tab object. */
-	private Tab channelTab;
-	/** is the message textfield focused? */
-	private boolean isMsgTextfieldFocused = false;
 	/** Reference to VaadinIRC */
 	VaadinIRC vaIRC;
 	
@@ -89,6 +66,7 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 	
 	public channelGUI(String channelName, VaadinIRC vaIRC, VaIRCInterface ircInterface)
 	{
+		super(null);
 		this.channelName = channelName;
 		this.vaIRC = vaIRC;
 		this.ircInterface = ircInterface;
@@ -102,15 +80,6 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 		buttonChangeNick = 			new Button("");
 		buttonRefreshUsernames =	new Button("");
 		styleComponents();
-	}
-	
-	/**
-	 * Sets the channel's Tab object.
-	 * @param channelTab Channel Tab object.
-	 */
-	public void setChannelTab(Tab channelTab)
-	{
-		this.channelTab = channelTab;
 	}
 	
 	/**
@@ -424,6 +393,12 @@ public class channelGUI implements Button.ClickListener, Serializable, Handler, 
 			ircInterface.receivedNoConnectionInitializedMessage();
 			textfieldMessagefield.setValue("");
 			ircInterface.pushChangesToClient();
+			return;
+		}
+		
+		if (settings.debug)
+		{
+			ircInterface.debugSendMessage(message);
 			return;
 		}
 		

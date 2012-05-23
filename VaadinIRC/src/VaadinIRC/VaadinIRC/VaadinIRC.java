@@ -108,7 +108,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	}
 	
 	/**
-	 * Changes given user nickname.
+	 * Changes given user's nickname.
 	 * @param oldNickname Old nickname.
 	 * @param newNickname New nickname.
 	 */
@@ -164,10 +164,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	public void pushChangesToClient()
 	{
 		if (ICEPush.getPushContext(pusher.getApplication().getContext()) != null)
-			{
 			pusher.push();
-			System.out.println("Pushing changes to client...");
-			}
 	}
 	
 	/**

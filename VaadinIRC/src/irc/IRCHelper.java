@@ -30,6 +30,48 @@ public class IRCHelper
 	}
 	
 	/**
+	 * Splits message with given index and returns all the data after given index.
+	 * @param row IRC Row.
+	 * @param splitSign What sign will be used to split the data.
+	 * @param splitIndex After what index is all the data returned. Index starts from 0, which is the first line of data.
+	 * @return Will return the splitted data. If there were errors, will return "".
+	 */
+	public static String splitMessageAfterRow(String row, String splitSign, int splitIndex)
+	{
+		try
+		{
+			String[] splitData = row.split(splitSign);
+			String removableData = "";
+			for (int i = 0; i < splitIndex; i++) removableData += splitData[i] + splitSign;
+			return row.replace(removableData, "");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return "";
+		}
+	}
+	
+	/**
+	 * Returns the IRC message type.<br>
+	 * For example: PRIVMSG, 513, 001 etc...
+	 * @return Returns the IRC row type. If type was not found, will return "".
+	 */
+	public static String getRowType(String row)
+	{
+		String returnType = "";
+		try
+		{
+		returnType =  row.split(" ")[1];
+		}
+		catch (Exception e)
+		{
+			return "";
+		}
+		return returnType == null ? "" : returnType; 
+	}
+	
+	/**
 	 * Gets target users for server sent /MODE message.<br>
 	 * Example: :Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +o VaAle101
 	 * @param row IRC row.

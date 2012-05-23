@@ -12,6 +12,8 @@ public abstract class MsgHandler
 {
 	/** Reference to IRC Interface. */
 	protected IRCInterface irc;
+	/** Current row that will be handled. */
+	protected String row = "";
 	
 	/**
 	 * Constructor to take the reference to IRCInterface.
@@ -23,19 +25,20 @@ public abstract class MsgHandler
 	}
 	
 	/**
-	 * To handle the line that server sent.
+	 * To handle the line that server sent.<br>
+	 * Remember to store the current row to member variable {@link #row}.
      * @param row Full IRC message row.
 	 * @return Returns true if line was handled. Otherwise false.
 	 */
-	public abstract boolean handleLine(String row);
+	public abstract boolean handleLine(String ircRow);
 	
     /**
-     * Checks the command that server sent to client.
-     * @param row Full IRC message row.
+     * Checks the command that server sent to client.<br>
+     * Remember to store the IRC row to row variable.
      * @param message Command that should match the command sent from server. This is not case sensitive.
      * @return Returns true if command was same that was passed. Otherwise false.
      */
-    protected boolean checkCommand(String row, String command)
+    protected boolean checkCommand(String command)
     {
     	String getCommand = IRCHelper.getStdCommand(row);
     	if (getCommand == null) return false;

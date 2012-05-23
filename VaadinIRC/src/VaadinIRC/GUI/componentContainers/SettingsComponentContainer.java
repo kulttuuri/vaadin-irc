@@ -1,7 +1,6 @@
 package VaadinIRC.GUI.componentContainers;
 
 import VaadinIRC.settings;
-import VaadinIRC.GUI.AbstractWindowGUI;
 
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -14,7 +13,7 @@ import com.vaadin.ui.Window;
  * @author Aleksi Postari
  *
  */
-public abstract class SettingsComponentContainer extends AbstractWindowGUI
+public abstract class SettingsComponentContainer extends AbstractComponentContainer
 {
 	/** Server textfield */
 	protected TextField textfieldServer;
@@ -31,7 +30,7 @@ public abstract class SettingsComponentContainer extends AbstractWindowGUI
 	
 	public SettingsComponentContainer(Window mainWindow)
 	{
-		super(mainWindow);
+		super(mainWindow, true);
 	}
 
 	/**
