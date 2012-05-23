@@ -107,7 +107,8 @@ public class ThreadIRCConnect extends Thread
         	// Additional PONG response
         	if (row.indexOf(IRCEnums.CONNECT_ADDITIONAL_PING_RESPONSE) >= 0)
         	{
-        		try {
+        		try
+        		{
             		String[] split = row.split(" ");
         			irc.writeMessageToBuffer("PONG " + split[split.length - 1]);
         		} catch (Exception e) { }

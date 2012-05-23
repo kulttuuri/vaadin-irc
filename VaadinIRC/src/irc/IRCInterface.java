@@ -198,4 +198,16 @@ public abstract interface IRCInterface
 	 * @param nickname Nickname.
 	 */
 	public abstract void usersDeVoiced(String channel, ArrayList<String> nicknames);
+	
+	/**
+	 * Returns if debug mode is enabled.
+	 * @return True if debug mode is enabled, otherwise false.
+	 */
+	public abstract boolean isDebugEnabled();
+	
+	/**
+	 * Sends message to "server" in debug mode.
+	 * @param message Message to be sent. This message is handled inside {@link ThreadIRCReader#handleCommand(String)}.
+	 */
+	public abstract void debugSendMessage(String message);
 }

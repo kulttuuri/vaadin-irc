@@ -9,6 +9,7 @@ import org.vaadin.artur.icepush.ICEPush;
 import com.vaadin.ui.Window;
 
 import VaadinIRC.main;
+import VaadinIRC.settings;
 import VaadinIRC.exceptions.ChannelNotFoundException;
 import irc.IRC;
 import irc.IRCInterface;
@@ -412,5 +413,15 @@ public class VaIRCInterface implements IRCInterface
 	public void userChangedNickname(String oldNickname, String newNickname)
 	{
 		vairc.changeUserNickname(oldNickname, newNickname);
+	}
+
+	public boolean isDebugEnabled()
+	{
+		return settings.debug;
+	}
+
+	public void debugSendMessage(String message)
+	{
+		irc.debugSendMessageToReader(message);
 	}
 }
