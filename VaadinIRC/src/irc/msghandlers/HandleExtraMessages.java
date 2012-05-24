@@ -2,14 +2,16 @@ package irc.msghandlers;
 
 import static irc.IRCHelper.*;
 import java.util.ArrayList;
+import irc.IRC;
 import irc.IRCHelper;
 import irc.IRCInterface;
 import irc.IRCSession;
+import irc.exceptions.TerminateConnectionException;
 
 /**
  * To handle extra IRC messages without any numeric codes.<br>
- * For example: PRIVMSG, TOPIC.
- * @author Kulttuuri
+ * For example: PRIVMSG, TOPIC, PING.
+ * @author Aleksi Postari
  *
  */
 public class HandleExtraMessages extends MsgHandler
@@ -24,14 +26,18 @@ public class HandleExtraMessages extends MsgHandler
 	}
 
 	@Override
-	public boolean handleLine(String ircRow)
+	public boolean handleLine(String ircRow, IRC ircApp) throws TerminateConnectionException
 	{
 		this.row = ircRow;
 		
     	// Current message splitted with spaces
     	ArrayList<String> rowSpaces = new ArrayList<String>();
     	rowSpaces = IRCHelper.splitCommandsToList(row, " ");
-		
+		// PING
+    	if (row.startsWith("PING"))
+    	{
+    		ircApp.handlePingResponse(row);
+    	}
 		// NOTICE
 		if (row.startsWith("NOTICE"))
 		{
@@ -47,11 +53,18 @@ public class HandleExtraMessages extends MsgHandler
         	// Wait so that channel will have time to get generated
         	try { Thread.sleep(1000); } catch (InterruptedException e) { }
         }
-        // Normal channel message (PRIVMSG)
+        // PRIVMSG (Channel / private message)
         else if (!row.startsWith(":" + session.getNickname()) && checkCommand("PRIVMSG"))
         {
+        	if (getChannelFromStdMessage(row).startsWith("#"))
+        	{
         	if (!getNicknameFromStdMessage(row).equals(session.getNickname()))
         		irc.receivedNewMessage(getNicknameFromStdMessage(row), getContentFromStdMessage(row), getChannelFromStdMessage(row));
+        	}
+        	else
+        	{
+        		irc.receivedNewPrivateMessage(getNicknameFromStdMessage(row), getStdReason(row));
+        	}
         }
         // Part (:VaAle101!~null@a91-152-121-162.elisa-laajakaista.fi PART #testikannu12345 :reason)
         else if (checkCommand("PART"))
@@ -64,10 +77,10 @@ public class HandleExtraMessages extends MsgHandler
         // Kick (:Kulttuuri!u4267@irccloud.com KICK #testikannu12345 VaAle101 :reason)
         else if (checkCommand("KICK"))
         {
-        	if (getNicknameFromStdMessage(row).equals(session.getNickname()))
+        	if (rowSpaces.get(3).equals(session.getNickname()))
         		irc.kickedFromChannel(getChannelFromStdMessage(row), session.getServer(), getStdReason(row));
         	else
-        		irc.otherKickedFromChannel(getChannelFromStdMessage(row), session.getServer(), getNicknameFromStdMessage(row), getStdReason(row));
+        		irc.otherKickedFromChannel(getChannelFromStdMessage(row), session.getServer(), rowSpaces.get(3), getStdReason(row));
         }
         // Nick change (:ASDQWEASD!~null@a91-152-121-162.elisa-laajakaista.fi NICK :testaaja)
         else if (checkCommand("NICK"))
@@ -75,25 +88,43 @@ public class HandleExtraMessages extends MsgHandler
         	if (getNicknameFromStdMessage(row).equals(session.getNickname()))
         		irc.userChangedNickname(getNicknameFromStdMessage(row), getContentFromStdMessage(row));
         	else
-        		irc.userChangedNickname(getNicknameFromStdMessage(row), getContentFromStdMessage(row));
+        		irc.otherChangedNickname(getNicknameFromStdMessage(row), getContentFromStdMessage(row));
         }
         // Mode (:Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +bbb VaAle101!*@* reason!*@* viesti!*@*)
         else if (checkCommand("MODE"))
         {
         	String mode = rowSpaces.get(3);
+        	String channel = rowSpaces.get(2);
         	if (mode.startsWith("+o"))
-        		irc.usersOpped(getChannelFromStdMessage(row), getModeTargetUsers(row));
+        		irc.usersOpped(channel, getModeTargetUsers(row));
         	if (mode.startsWith("-o"))
-        		irc.usersDeOpped(getChannelFromStdMessage(row), getModeTargetUsers(row));
+        		irc.usersDeOpped(channel, getModeTargetUsers(row));
         	if (mode.startsWith("+v"))
-        		irc.usersVoiced(getChannelFromStdMessage(row), getModeTargetUsers(row));
+        		irc.usersVoiced(channel, getModeTargetUsers(row));
         	if (mode.startsWith("-v"))
-        		irc.usersDeVoiced(getChannelFromStdMessage(row), getModeTargetUsers(row));
+        		irc.usersDeVoiced(channel, getModeTargetUsers(row));
         }
         // TOPIC (:Kulttuuri!u4267@irccloud.com TOPIC #testikannu12345 :asd)
         else if (checkCommand("TOPIC"))
         {
         	irc.setChannelTopic(getChannelFromStdMessage(row), getStdReason(row), getNicknameFromStdMessage(row), true);
+        }
+		// QUIT  (:Kenkae!~kenkae@OsmosKosmos.users.quakenet.org QUIT :Read error: Operation timed out)
+        else if (checkCommand("QUIT"))
+        {
+        	if (getNicknameFromStdMessage(row).equals(session.getNickname()))
+        	{
+        		irc.quitNetwork(session.getServer(), getStdReason(row));
+        		throw new TerminateConnectionException(getStdReason(row));
+        	}
+        	else
+        		irc.otherQuitNetwork(getNicknameFromStdMessage(row), session.getServer(), getStdReason(row));
+        }
+        else if (row.startsWith("ERROR"))
+        {
+        	String reason = row.replace("ERROR :", "");
+        	irc.quitNetwork(session.getServer(), reason);
+        	throw new TerminateConnectionException(reason);
         }
 		// If command was not handled, return false.
 		else

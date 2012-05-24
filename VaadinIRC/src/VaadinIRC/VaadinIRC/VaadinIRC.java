@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.vaadin.artur.icepush.ICEPush;
+import VaadinIRC.settings;
 import VaadinIRC.GUI.GUIWindowChangeNickname;
 import VaadinIRC.GUI.GUIWindowSettings;
 import VaadinIRC.GUI.VaadinIrcGUI;
@@ -54,24 +55,43 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		this.window = window;
 		// Initialize VaadinIRC
 		init(window);
-		if (debug) debug(session);
+		if (settings.debug) debug(session);
 		else showSettingsWindow();
 	}
 	
 	/** Used for debug purposes. */
-	private boolean debug = false;
-	/** Used for debug purposes. */
 	public void debug(IRCSession session)
 	{
-		createChannel("#tone");
+		session.setNickname("asdasd2");
+		ircInterface.debugSendMessage(":asdasd2!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #testikannu12345");
+		ircInterface.debugSendMessage(":port80a.se.quakenet.org 332 VaAle #testikannu12345 :TIKOLAN4 8.6 - 10.6. Tiedepuistolla! Taavi, Pessu, Poppis, Z0a, EImo, VuNe");
 		ArrayList<String> users = new ArrayList<String>();
 		users.add("@Aleksi");
 		users.add("+Testaaja");
 		users.add("+vairc");
-		users.add("normal");
+		users.add("asdasd2");
 		users.add("user");
-		ircInterface.userListChanged("#tone", users);
-		channelMap.get("#tone").addMessageToChannelTextarea("linkki: http://www.google.com asd <b>bold</b>");
+		ircInterface.userListChanged("#testikannu12345", users);
+	}
+	
+	/**
+	 * Refreshes the topbar text.
+	 */
+	public void refreshTopbarText()
+	{
+		if (ircInterface == null || !ircInterface.isConnectionRunning())
+			topLabel.setValue("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_delete.png'/> Not connected to any network.</div>");
+		else
+		{
+			String server = session.getServer() + ":" + session.getServerPort();
+			String nick = session.getNickname();
+			topLabel.setValue("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_go.png'/> Connected to: " + server + " with nickname: " + nick + "</div>");
+		}
+	}
+	
+	public void setTopbarTextStatusConnecting()
+	{
+		topLabel.setValue("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_go.png'/> Connecting to network...</div>");
 	}
 	
 	/**
@@ -108,17 +128,31 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	}
 	
 	/**
-	 * Changes given user's nickname.
+	 * Changes given user's nickname.<br>
+	 * If old nickname was same as current user's nickname, current user's
+	 * nickname will also be changed to the new one.
 	 * @param oldNickname Old nickname.
 	 * @param newNickname New nickname.
 	 */
 	public void changeUserNickname(String oldNickname, String newNickname)
 	{
-		if (oldNickname.equals(session.getNickname()))
-			session.setNickname(newNickname);
+		if (oldNickname.equals(session.getNickname())) session.setNickname(newNickname);
 		
 		for (Entry<String, channelGUI> channel : channelMap.entrySet())
 			channelMap.get(channel.getKey()).changeUserNickname(oldNickname, newNickname);
+	}
+	
+	/**
+	 * Removes user from channels.<br>
+	 * Can be used in conjuction with for ex. when other user quit from network.
+	 * @param nickname User's nickname.
+	 * @param reason Quit reason.
+	 * @param announceReason Announce reason?
+	 */
+	public void removeUserFromChannels(String nickname, String reason, boolean announceReason)
+	{
+		for (Entry<String, channelGUI> channel : channelMap.entrySet())
+			channelMap.get(channel.getKey()).removeUserFromChannel(nickname, reason, announceReason);
 	}
 	
 	/**
@@ -126,7 +160,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	 */
 	public void showNicknameChangeWindow()
 	{
-		new GUIWindowChangeNickname(window, session);
+		new GUIWindowChangeNickname(window, session, ircInterface);
 	}
 	
 	/**
@@ -203,6 +237,24 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	}
 	
 	/**
+	 * Starts new private conversation window with given nickname.
+	 * @param nickname Target nickname.
+	 * @param message Message to be sent to user. Can be empty ("").
+	 */
+	public void createPrivateConversation(String nickname, String message)
+	{
+		// Add channel to list of channel maps and create new Tab to TabSheet out of it & select the newly created tab.
+		channelMap.put(nickname, new channelGUI(nickname, this, ircInterface));
+		channelTabs.addTab(channelMap.get(nickname).getChannelGUI(), nickname);
+		channelTabs.setSelectedTab(channelMap.get(nickname).getChannelGUI());
+		// Set icon for the channel
+		removeChannelActivity(nickname);
+		channelMap.get(nickname).addMessageToChannelTextarea("Started private conversation with " + nickname + ".");
+		if (message != null && !message.trim().equals(""))
+			ircInterface.receivedNewPrivateMessage(session.getNickname(), message);
+	}
+	
+	/**
 	 * Creates new IRC Channel with given name.
 	 * Basically just adds the channel to list of channels and to TabSheet.
 	 * @param channelName Name of the channel.
@@ -238,6 +290,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		{
 			if (!channel.equals("status"))
 			{
+				if (getTab(channel) == null) continue;
 				channelTabs.removeTab(getTab(channel));
 				channels.remove(channel);
 			}

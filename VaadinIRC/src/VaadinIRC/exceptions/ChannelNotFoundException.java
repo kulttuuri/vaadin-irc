@@ -13,6 +13,7 @@ public class ChannelNotFoundException extends Exception
 	public ChannelNotFoundException(String channelName)
 	{
 		super();
+		this.channelName = channelName;
 	}
 	
 	@Override

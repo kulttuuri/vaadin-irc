@@ -1,6 +1,9 @@
 package irc;
 
 import irc.exceptions.*;
+import irc.msghandlers.HandleConnectMessages;
+import irc.msghandlers.HandleErrorMessages;
+import irc.msghandlers.HandleExtraMessages;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,27 +41,22 @@ public class ThreadIRCConnect extends Thread
 		{
 			connect();
 		}
-		catch (InvalidNicknameException e)
-		{
-			irc.GUIInterface.receivedStatusMessage(e.getMessage());
-		}
-		catch (NicknameAlreadyInUseException e)
-		{
-			irc.GUIInterface.receivedStatusMessage(e.getMessage());
-		}
 		catch (IOException e)
 		{
-			irc.GUIInterface.receivedStatusMessage(e.getMessage());
+			irc.GUIInterface.quitNetwork(irc.getSession().getServer(), "Disconnected from server.");
+		}
+		catch (NullPointerException e)
+		{
+			irc.GUIInterface.quitNetwork(irc.getSession().getServer(), "Disconnected from server.");
 		}
 	}
 	
 	/**
 	 * Connects to IRC server.
-	 * @throws InvalidNicknameException If nickname was invalid.
-	 * @throws NicknameAlreadyInUseException If nickname is already in use.
 	 * @throws IOException If IOException did happen.
+	 * @throws NullPointerException If NullPointerException did happen.
 	 */
-	private void connect() throws InvalidNicknameException, NicknameAlreadyInUseException, IOException
+	private void connect() throws IOException, NullPointerException
 	{
         irc.GUIInterface.receivedStatusMessage("Connecting to network: " + irc.session.getServer() + " using port " + irc.session.getServerPort() + "...");
         
@@ -72,7 +70,7 @@ public class ThreadIRCConnect extends Thread
         catch (ConnectException e)
         {
         	irc.GUIInterface.receivedStatusMessage("Unable to initialize socket connection to server: " + irc.session.getServer() + " using port " + irc.session.getServerPort());
-        	try { irc.closeConnection(); } catch (NoConnectionInitializedException noConE) { }
+        	irc.setConnectionRunning(false);
         }
 
         // Create new buffered writer of the connection
@@ -84,6 +82,7 @@ public class ThreadIRCConnect extends Thread
         try
         {
             irc.setConnectionRunning(true);
+        	irc.GUIInterface.connectionStatusChanged(irc.getSession().getServer(), IRC.CONNECTION_STATUS_CONNECTING);
         	irc.writeMessageToBuffer("USER " + irc.session.getLogin() + " 8 * : " + irc.session.getLogin());
         	irc.writeMessageToBuffer("NICK " + irc.session.getNickname());
         }
@@ -95,42 +94,59 @@ public class ThreadIRCConnect extends Thread
         	e.printStackTrace();
         }
         
+        HandleConnectMessages connectHandler = new HandleConnectMessages(irc.GUIInterface);
+        HandleErrorMessages errorHandler = new HandleErrorMessages(irc.GUIInterface);
+        HandleExtraMessages extraHandler = new HandleExtraMessages(irc.GUIInterface, irc.session);
+        
         // Connect to server
+        boolean connected = false;
         while ((row = irc.reader.readLine()) != null)
         {
-        	irc.GUIInterface.receivedStatusMessage(row);
+        	//irc.GUIInterface.receivedStatusMessage("DEBUG: " + row);
+        	// Handle connect messages
+        	try
+        	{
+        		if (connectHandler.handleConnectLines(row, irc)) connected = true;
+        	}
+        	catch (InvalidNicknameException e)
+        	{
+        		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+        		irc.setConnectionRunning(false);
+        		connected = false;
+        		break;
+        	}
+        	catch (NicknameAlreadyInUseException e)
+        	{
+        		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+        		irc.setConnectionRunning(false);
+        		connected = false;
+        		break;
+        	}
         	
-        	if (row.startsWith("PING "))
-        	{
-        		irc.handlePingResponse(row);
-        	}
-        	// Additional PONG response
-        	if (row.indexOf(IRCEnums.CONNECT_ADDITIONAL_PING_RESPONSE) >= 0)
-        	{
-        		try
-        		{
-            		String[] split = row.split(" ");
-        			irc.writeMessageToBuffer("PONG " + split[split.length - 1]);
-        		} catch (Exception e) { }
-        	}
-            // If row was 004, we have succesfully connected to server.
-        	else if (row.indexOf(IRCEnums.CONNECT_ONNECTION_SUCCESFUL) >= 0)
-            {
-                break;
-            }
-            // Invalid nickname
-            else if(row.indexOf(IRCEnums.CONNECT_INVALID_NICKNAME) >= 0)
-            {
-                throw new InvalidNicknameException();
-            }
-            // Nickname already in use
-            else if (row.indexOf(IRCEnums.CONNECT_NICKNAME_IN_USE) >= 0)
-            {
-                throw new NicknameAlreadyInUseException();
-            }
+        	// Handle extra messages, like NOTICE
+        	try
+			{
+				if (extraHandler.handleLine(row, irc)) continue;
+			}
+			catch (TerminateConnectionException e)
+			{
+        		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+				irc.setConnectionRunning(false);
+				break;
+			}
+        	// Handle error messages.
+        	if (errorHandler.handleLine(row, irc)) continue;
+        	
+        	if (connected) break;
+        	if (!irc.isConnectionRunning()) break;
+        }
+        
+        if (!connected)
+        {
+        	irc.setConnectionRunning(false);
+        	return;
         }
 
-        irc.GUIInterface.receivedStatusMessage("Connected to network: " + irc.session.getServer() + " through port " + irc.session.getServerPort());
         irc.setConnectionRunning(true);
         
         // Start thread for reading IRC messages

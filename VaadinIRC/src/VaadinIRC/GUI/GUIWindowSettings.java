@@ -61,7 +61,7 @@ public class GUIWindowSettings extends SettingsComponentContainer
 	@Override
 	public void buttonPressedDisconnectFromServer()
 	{
-		irc.quitNetwork(session.getServer());
+		irc.quitNetwork(session.getServer(), "");
 		close();
 	}
 	

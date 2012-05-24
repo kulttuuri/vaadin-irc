@@ -9,6 +9,12 @@ import java.util.ArrayList;
  */
 public class IRCHelper
 {
+	/**
+	 * Splits commands to list with given delimiter.
+	 * @param row {@link JavadocLibrary#row}
+	 * @param delimiter Delimiter used for the split.
+	 * @return Returns the split list.
+	 */
 	public static ArrayList<String> splitCommandsToList(String row, String delimiter)
 	{
 		try
@@ -31,7 +37,7 @@ public class IRCHelper
 	
 	/**
 	 * Splits message with given index and returns all the data after given index.
-	 * @param row IRC Row.
+	 * @param row {@link JavadocLibrary#row}
 	 * @param splitSign What sign will be used to split the data.
 	 * @param splitIndex After what index is all the data returned. Index starts from 0, which is the first line of data.
 	 * @return Will return the splitted data. If there were errors, will return "".
@@ -55,14 +61,15 @@ public class IRCHelper
 	/**
 	 * Returns the IRC message type.<br>
 	 * For example: PRIVMSG, 513, 001 etc...
-	 * @return Returns the IRC row type. If type was not found, will return "".
+	 * @param row {@link irc.JavadocLibrary#row}
+	 * @return Returns the {@link JavadocLibrary#row} type. If type was not found, will return "".
 	 */
 	public static String getRowType(String row)
 	{
 		String returnType = "";
 		try
 		{
-		returnType =  row.split(" ")[1];
+			returnType =  row.split(" ")[1];
 		}
 		catch (Exception e)
 		{
@@ -74,7 +81,7 @@ public class IRCHelper
 	/**
 	 * Gets target users for server sent /MODE message.<br>
 	 * Example: :Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +o VaAle101
-	 * @param row IRC row.
+	 * @param row {@link JavadocLibrary#row}
 	 * @return Returns the target users in ArrayList.
 	 */
 	public static ArrayList<String> getModeTargetUsers(String row)
@@ -94,6 +101,11 @@ public class IRCHelper
 		return returnList;
 	}
 	
+	/**
+	 * Gets reason message from standard message.
+	 * @param row {@link JavadocLibrary#row}
+	 * @return Returns the standard message for given row. If reason was not found, will return "".
+	 */
 	public static String getStdReason(String row)
 	{
 		String reason = getContentFromStdMessage(row);
@@ -114,6 +126,11 @@ public class IRCHelper
 		}
 	}
 	
+	/**
+	 * Gets channel from standard irc message.
+	 * @param row {@link JavadocLibrary#row}
+	 * @return Returns the standard channel, or null if could not be fetched.
+	 */
 	public static String getChannelFromStdMessage(String row)
 	{
 		try
@@ -127,6 +144,11 @@ public class IRCHelper
 		}
 	}
 	
+	/**
+	 * Returns the content from standard irc message.
+	 * @param row {@link JavadocLibrary#row}
+	 * @return Returns the content from standard irc message, or null if could not be fetched.
+	 */
 	public static String getContentFromStdMessage(String row)
 	{
 		try
@@ -141,9 +163,9 @@ public class IRCHelper
 	}
 	
 	/**
-	 * Returns the nickname from standard IRC message.
+	 * Returns the nickname from standard IRC message.<br>
 	 * Given message should be in format like this: :VaAle101!~null@a91-152-121-162.elisa-laajakaista.fi PART #testikannu12345 :viesti
-	 * @param message IRC Message.
+	 * @param row {@link JavadocLibrary#row}
 	 * @return Returns the parsed nickname. If there were errors, will return null object.
 	 */
 	public static String getNicknameFromStdMessage(String row)
@@ -162,7 +184,7 @@ public class IRCHelper
 	/**
 	 * Generates formatted IRC message from the given nickname and message and returns it.
 	 * @param nick Nickname.
-	 * @param message Message.
+	 * @param row {@link JavadocLibrary#row}
 	 * @return Returns the generated channel message as an string.
 	 * @deprecated Because html tags are being removed from all messages.
 	 */

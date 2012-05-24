@@ -1,7 +1,10 @@
 package irc.msghandlers;
 
+import irc.IRC;
 import irc.IRCHelper;
 import irc.IRCInterface;
+import irc.JavadocLibrary;
+import irc.exceptions.TerminateConnectionException;
 
 /**
  * Base class for all IRC Message handlers.
@@ -12,7 +15,7 @@ public abstract class MsgHandler
 {
 	/** Reference to IRC Interface. */
 	protected IRCInterface irc;
-	/** Current row that will be handled. */
+	/** @see JavadocLibrary#row */
 	protected String row = "";
 	
 	/**
@@ -26,11 +29,12 @@ public abstract class MsgHandler
 	
 	/**
 	 * To handle the line that server sent.<br>
-	 * Remember to store the current row to member variable {@link #row}.
-     * @param row Full IRC message row.
+     * @param ircRow {@link JavadocLibrary#row}
+     * @param ircApp IRC application.
 	 * @return Returns true if line was handled. Otherwise false.
+	 * @throws TerminateConnectionException When connection was needed to be terminated.
 	 */
-	public abstract boolean handleLine(String ircRow);
+	public abstract boolean handleLine(String ircRow, IRC ircApp) throws TerminateConnectionException;
 	
     /**
      * Checks the command that server sent to client.<br>

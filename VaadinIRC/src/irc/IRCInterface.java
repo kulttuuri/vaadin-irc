@@ -16,6 +16,12 @@ public abstract interface IRCInterface
 	public abstract void connectToServer(IRCSession session);
 	
 	/**
+	 * Is connection to IRC server running?
+	 * @return Returns true if connection to IRC server is running. Otherwise false.
+	 */
+	public abstract boolean isConnectionRunning();
+	
+	/**
 	 * Returns the user's current channel name which he is on.
 	 * @return Current channel name.
 	 */
@@ -60,6 +66,13 @@ public abstract interface IRCInterface
 	 * @param channel Channel where the message was received.
 	 */
 	public abstract void receivedNewMessage(String nickname, String message, String channel);
+	
+	/**
+	 * When user receives new private message.
+	 * @param nickname Sender nickname.
+	 * @param message Message that was sent.
+	 */
+	public abstract void receivedNewPrivateMessage(String nickname, String message);
 	
 	/**
 	 * When user receives message that will need to be added to status channels messages.
@@ -140,15 +153,25 @@ public abstract interface IRCInterface
 	/**
 	 * User did quit from network.
 	 * @param network Name of the network.
+	 * @param reason Reason of the quit.
 	 */
-	public abstract void quitNetwork(String network);
+	public abstract void quitNetwork(String network, String reason);
+	
+	/**
+	 * When IRC connection state has been changed, this gets called.<br>
+	 * Refer to the static CONNECTION_STATE variables in class irc for status types.
+	 * @param network Name of the network.
+	 * @param status New connection status.
+	 */
+	public abstract void connectionStatusChanged(String network, int status);
 	
 	/**
 	 * Other user quit the network.
+	 * @param nickname Nickname that did quit.
 	 * @param network Name of the network.
 	 * @param reason Quit reason.
 	 */
-	public abstract void otherQuitNetwork(String network, String reason);
+	public abstract void otherQuitNetwork(String nickname, String network, String reason);
 	
 	/**
 	 * When other user changes nickname.
