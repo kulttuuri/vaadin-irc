@@ -1,10 +1,12 @@
 package irc;
 
 import java.util.ArrayList;
+import net.sourceforge.htmlunit.corejs.javascript.tools.shell.QuitAction;
 
 import VaadinIRC.VaadinIRC.VaIRCInterface;
 
 import irc.exceptions.NoConnectionInitializedException;
+import irc.exceptions.TerminateConnectionException;
 import irc.msghandlers.HandleConnectMessages;
 import irc.msghandlers.HandleErrorMessages;
 import irc.msghandlers.HandleExtraMessages;
@@ -66,23 +68,32 @@ public class ThreadIRCReader extends Thread
     }
     
     /**
-     * Gets the passed IRC row and executes any functionality for it.
-     * @param row Full IRC row.
+     * Gets the passed IRC line and executes any functionality for it.
+     * @param row {@link JavadocLibrary#row}
      */
     public void handleCommand(String row)
     {
         System.out.println("DEBUG: did read line: " + row);
         // Handle extra messages without numeric codes
-        if (extraMsgHandler.handleLine(row)) return;
+        try
+		{
+			if (extraMsgHandler.handleLine(row, irc)) return;
+		}
+		catch (TerminateConnectionException e)
+		{
+    		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+			irc.setConnectionRunning(false);
+			return;
+		}
         // Handle standard messages
-        if (stdMessageHandler.handleLine(row)) return;
+        if (stdMessageHandler.handleLine(row, irc)) return;
         // Handle error replies
-        if (errorHandler.handleLine(row)) return;
+        if (errorHandler.handleLine(row, irc)) return;
     }
     
     /**
      * Checks the command that server sent to client.
-     * @param row Full IRC message row.
+     * @param row {@link JavadocLibrary#row}
      * @param message Command that should match the command sent from server. This is not case sensitive.
      * @return Returns true if command was same that was passed. Otherwise false.
      */

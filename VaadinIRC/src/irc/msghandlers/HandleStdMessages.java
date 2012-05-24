@@ -2,6 +2,7 @@ package irc.msghandlers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import irc.IRC;
 import irc.IRCEnums;
 import irc.IRCHelper;
 import irc.IRCInterface;
@@ -28,7 +29,7 @@ public class HandleStdMessages extends MsgHandler
 	}
 
 	@Override
-	public boolean handleLine(String ircRow)
+	public boolean handleLine(String ircRow, IRC ircApp)
 	{
 		this.row = ircRow;
 		
@@ -59,7 +60,7 @@ public class HandleStdMessages extends MsgHandler
         // Store channel topic on join
         else if (checkCommand("331") || checkCommand("332"))
         {
-        	irc.setChannelTopic(rowSpaces.get(0), IRCHelper.getStdReason(row), IRCHelper.getNicknameFromStdMessage(row), false);
+        	irc.setChannelTopic(rowSpaces.get(3), IRCHelper.splitMessageAfterRow(row, ":", 2), IRCHelper.getNicknameFromStdMessage(row), false);
         }
         else
         {

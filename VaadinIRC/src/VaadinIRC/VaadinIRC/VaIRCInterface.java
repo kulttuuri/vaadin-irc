@@ -12,6 +12,7 @@ import VaadinIRC.main;
 import VaadinIRC.settings;
 import VaadinIRC.exceptions.ChannelNotFoundException;
 import irc.IRC;
+import irc.IRCHelper;
 import irc.IRCInterface;
 import irc.IRCSession;
 import irc.exceptions.*;
@@ -30,7 +31,7 @@ public class VaIRCInterface implements IRCInterface
 	 * Notifies that there are new activity in the channel
 	 * so that new icon and such can be set to channel tab if that channel
 	 * is not selected.
-	 * @param channelName
+	 * @param channelName Name of the channel.
 	 */
 	public void setNewActivityToTab(String channelName)
 	{
@@ -44,6 +45,7 @@ public class VaIRCInterface implements IRCInterface
 	public void receivedNoConnectionInitializedMessage()
 	{
 		receivedStatusMessage("Connection to server has not yet been established. Could not send message to server.");
+		vairc.refreshTopbarText();
 	}
 	
 	/**
@@ -57,48 +59,86 @@ public class VaIRCInterface implements IRCInterface
 	
 	/**
 	 * Handles the command that client sent.
+	 * @param command Command.
+	 * @return Returns true if command was handled here. Otherwise false.
 	 */
-	private void handleCommand(String command)
+	private boolean handleCommand(String command)
 	{
 		try
 		{
-			// CONNECT
+	    	// Current message splitted with spaces
+	    	ArrayList<String> rowSpaces = new ArrayList<String>();
+	    	rowSpaces = IRCHelper.splitCommandsToList(command, " ");
+			
 			if (command.equalsIgnoreCase("CONNECT"))
 			{
 				irc.connect();
 			}
-			// NICK
-			// TODO: Check if nickname exists. Does server send new message when nick was changed?
-			else if (command.startsWith("NICK"))
+			else if (rowSpaces.get(0).equalsIgnoreCase("QUIT"))
 			{
-				String[] split = command.split(" ");
-				irc.getSession().setNickname(split[1]);
+				quitNetwork(irc.getSession().getServer(), "Disconnected from server.");
+				return true;
 			}
-			else if (command.startsWith("OP"))
+			else if (rowSpaces.get(0).equalsIgnoreCase("QUERY"))
 			{
-				command = command.replace("OP ", "");
-				irc.writeMessageToBuffer("/MODE +o " + command);
+				String target = "";
+				String reason = "";
+				try { reason = rowSpaces.get(2); } catch (Exception e) { }
+				try { target = rowSpaces.get(1); } catch (Exception e) { }
+				sendMessageToUser(target, reason);
+				receivedNewPrivateMessage(target, reason);
+				return true;
 			}
-			else if (command.startsWith("DEOP"))
+			else if (rowSpaces.get(0).equalsIgnoreCase("PRIVMSG"))
 			{
-				command = command.replace("DEOP ", "");
-				irc.writeMessageToBuffer("/MODE -o " + command);
+				String target = "";
+				String reason = "";
+				try { reason = rowSpaces.get(2); } catch (Exception e) { }
+				try { target = rowSpaces.get(1); } catch (Exception e) { }
+				sendMessageToUser(target, reason);
+				receivedNewPrivateMessage(target, reason);
+				return true;
 			}
-			else if (command.startsWith("VOICE"))
+			else if (rowSpaces.get(0).equalsIgnoreCase("WC"))
 			{
-				command = command.replace("VOICE ", "");
-				irc.writeMessageToBuffer("/MODE +v " + command);
+				if (!vairc.getSelectedChannelName().startsWith("#"))
+					vairc.removeChannel(vairc.getSelectedChannelName());
+				return true;
 			}
-			else if (command.startsWith("DEVOICE"))
+			else if (rowSpaces.get(0).equalsIgnoreCase("OP"))
 			{
-				command = command.replace("DEVOICE ", "");
-				irc.writeMessageToBuffer("/MODE -v " + command);
+				String commandParams = IRCHelper.splitMessageAfterRow(command, " ", 1);
+				irc.writeMessageToBuffer("/MODE " + vairc.getSelectedChannelName() + " +o " + commandParams);
+				return true;
+			}
+			else if (rowSpaces.get(0).equalsIgnoreCase("DEOP"))
+			{
+				String commandParams = IRCHelper.splitMessageAfterRow(command, " ", 1);
+				irc.writeMessageToBuffer("/MODE " + vairc.getSelectedChannelName() + " -o " + commandParams);
+				return true;
+			}
+			else if (rowSpaces.get(0).equalsIgnoreCase("VOICE"))
+			{
+				String commandParams = IRCHelper.splitMessageAfterRow(command, " ", 1);
+				irc.writeMessageToBuffer("/MODE " + vairc.getSelectedChannelName() + " +v " + commandParams);
+				return true;
+			}
+			else if (rowSpaces.get(0).equalsIgnoreCase("DEVOICE"))
+			{
+				String commandParams = IRCHelper.splitMessageAfterRow(command, " ", 1);
+				irc.writeMessageToBuffer("/MODE " + vairc.getSelectedChannelName() + " -v " + commandParams);
+				return true;
 			}
 		}
 		catch (NoConnectionInitializedException e)
 		{
 			receivedNoConnectionInitializedMessage();
 		}
+		catch (Exception e)
+		{
+			System.out.println("Exception handling user sent command: " + e);
+		}
+		return false;
 	}
 	
 	/**
@@ -119,10 +159,6 @@ public class VaIRCInterface implements IRCInterface
 		this.irc = irc;
 	}
 	
-	/**
-	 * Is connection to IRC server running?
-	 * @return Returns true if connection to IRC server is running. Otherwise false.
-	 */
 	public boolean isConnectionRunning()
 	{
 		return irc.isConnectionRunning();
@@ -131,6 +167,7 @@ public class VaIRCInterface implements IRCInterface
 	public void connectToServer(IRCSession session)
 	{
 		irc.connect();
+		vairc.refreshTopbarText();
 	}
 	
 	public boolean sendMessageToServer(String message)
@@ -138,8 +175,8 @@ public class VaIRCInterface implements IRCInterface
 		if (message.startsWith("/")) message = message.substring(1);
 		try
 		{
-			handleCommand(message);
-			irc.writeMessageToBuffer(message);
+			if (!handleCommand(message))
+				irc.writeMessageToBuffer(message);
 			return true;
 		}
 		catch (NoConnectionInitializedException e)
@@ -166,7 +203,15 @@ public class VaIRCInterface implements IRCInterface
 	
 	public void sendMessageToUser(String user, String message)
 	{
-		// TODO: Implement.
+		try
+		{
+			if (!vairc.containsChannel(user)) vairc.createChannel(user);
+			irc.writeMessageToBuffer("PRIVMSG " + user + " " + message);
+		}
+		catch (NoConnectionInitializedException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public void receivedNewMessage(String username, String message, String channel)
@@ -253,8 +298,7 @@ public class VaIRCInterface implements IRCInterface
 	{
 		try
 		{
-			vairc.getChannel(channelName).removeUserFromChannel(nickname);
-			vairc.getChannel(channelName).addMessageToChannelTextarea(nickname + " left the channel.");
+			vairc.getChannel(channelName).removeUserFromChannel(nickname," left the channel.", true);
 		}
 		catch (ChannelNotFoundException e)
 		{
@@ -281,8 +325,7 @@ public class VaIRCInterface implements IRCInterface
 	{
 		try
 		{
-			vairc.getChannel(channelName).removeUserFromChannel(nickname);
-			vairc.getChannel(channelName).addMessageToChannelTextarea(nickname + " was kicked from the channel (" + reason + ")");
+			vairc.getChannel(channelName).removeUserFromChannel(nickname, "was kicked from the channel (" + reason + ")", true);
 		}
 		catch (ChannelNotFoundException e)
 		{
@@ -309,8 +352,7 @@ public class VaIRCInterface implements IRCInterface
 	{
 		try
 		{
-			vairc.getChannel(channelName).removeUserFromChannel(nickname);
-			vairc.getChannel(channelName).addMessageToChannelTextarea(nickname + " was banned from the channel (" + reason + ")");
+			vairc.getChannel(channelName).removeUserFromChannel(nickname, nickname + " was banned from the channel (" + reason + ")", true);
 		}
 		catch (ChannelNotFoundException e)
 		{
@@ -319,23 +361,18 @@ public class VaIRCInterface implements IRCInterface
 		pushChangesToClient();
 	}
 
-	public void quitNetwork(String network)
+	public void quitNetwork(String network, String reason)
 	{
-		try
-		{
-			vairc.removeAllServerTabs();
-			irc.closeConnection();
-		}
-		catch (NoConnectionInitializedException e)
-		{
-			receivedStatusMessage(e.getMessage());
-		}
+		irc.setConnectionRunning(false);
+		vairc.removeAllServerTabs();
+		vairc.refreshTopbarText();
+		pushChangesToClient();
 	}
 
-	public void otherQuitNetwork(String network, String reason)
+	public void otherQuitNetwork(String nickname, String network, String reason)
 	{
-		// TODO Auto-generated method stub
-		
+		vairc.removeUserFromChannels(nickname, "quit: " + reason, true);
+		pushChangesToClient();
 	}
 
 	public void usersOpped(String channel, ArrayList<String> nicknames)
@@ -348,6 +385,7 @@ public class VaIRCInterface implements IRCInterface
 		{
 			e.printStackTrace();
 		}
+		pushChangesToClient();
 	}
 
 	public void usersDeOpped(String channel, ArrayList<String> nicknames)
@@ -360,6 +398,7 @@ public class VaIRCInterface implements IRCInterface
 		{
 			e.printStackTrace();
 		}
+		pushChangesToClient();
 	}
 
 	public void usersVoiced(String channel, ArrayList<String> nicknames)
@@ -372,6 +411,7 @@ public class VaIRCInterface implements IRCInterface
 		{
 			e.printStackTrace();
 		}
+		pushChangesToClient();
 	}
 
 	public void usersDeVoiced(String channel, ArrayList<String> nicknames)
@@ -384,9 +424,10 @@ public class VaIRCInterface implements IRCInterface
 		{
 			e.printStackTrace();
 		}
+		pushChangesToClient();
 	}
 
-	public void setChannelTopic(String nickname, String channel, String topic, boolean notifyChannel)
+	public void setChannelTopic(String channel, String topic, String nickname, boolean notifyChannel)
 	{
 		try
 		{
@@ -397,6 +438,7 @@ public class VaIRCInterface implements IRCInterface
 		{
 			e.printStackTrace();
 		}
+		pushChangesToClient();
 	}
 
 	public void receivedErrorMessage(String error)
@@ -408,11 +450,15 @@ public class VaIRCInterface implements IRCInterface
 	public void otherChangedNickname(String oldNickname, String newNickname)
 	{
 		vairc.changeUserNickname(oldNickname, newNickname);
+		pushChangesToClient();
 	}
 
 	public void userChangedNickname(String oldNickname, String newNickname)
 	{
+		irc.getSession().setNickname(newNickname);
 		vairc.changeUserNickname(oldNickname, newNickname);
+		vairc.refreshTopbarText();
+		pushChangesToClient();
 	}
 
 	public boolean isDebugEnabled()
@@ -423,5 +469,37 @@ public class VaIRCInterface implements IRCInterface
 	public void debugSendMessage(String message)
 	{
 		irc.debugSendMessageToReader(message);
+		pushChangesToClient();
+	}
+
+	public void connectionStatusChanged(String network, int status)
+	{
+		if (status == IRC.CONNECTION_STATUS_CONNECTED)
+		{
+	        receivedStatusMessage("Connected to network: " + network + ".");
+			vairc.refreshTopbarText();
+		}
+		else if (status == IRC.CONNECTION_STATUS_DISCONNECTED)
+		{
+			receivedStatusMessage("Disconnected from network " + network + ".");
+			vairc.refreshTopbarText();
+		}
+		else if (status == IRC.CONNECTION_STATUS_CONNECTING)
+			vairc.setTopbarTextStatusConnecting();
+		
+		vairc.pushChangesToClient();
+	}
+
+	public void receivedNewPrivateMessage(String nickname, String message)
+	{
+		if (!vairc.containsChannel(nickname)) vairc.createPrivateConversation(nickname, message);
+		try
+		{
+			vairc.getChannel(nickname).addStandardChannelMessage(nickname, message);
+		}
+		catch (ChannelNotFoundException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

@@ -1,10 +1,12 @@
 package VaadinIRC.GUI;
 
+import irc.IRCInterface;
 import irc.IRCSession;
 
 import VaadinIRC.GUI.componentContainers.SettingsComponentContainer;
 
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.terminal.UserError;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
@@ -20,15 +22,18 @@ public class GUIWindowChangeNickname extends SettingsComponentContainer
 {
 	/** IRC Session information. */
 	private IRCSession session;
+	/** IRC Interface. */
+	IRCInterface irc;
 	
 	/**
 	 * Constructor to initialize new window "Change Nickname".
 	 * @param mainWindow Main application window.
 	 * @param session IRCSession information.
 	 */
-	public GUIWindowChangeNickname(Window mainWindow, IRCSession session)
+	public GUIWindowChangeNickname(Window mainWindow, IRCSession session, IRCInterface irc)
 	{
 		super(mainWindow);
+		this.irc = irc;
 		this.session = session;
 		textfieldNickname.setValue(session == null ? "" : session.getNickname() == null ? "" : session.getNickname());
 	}
@@ -49,13 +54,14 @@ public class GUIWindowChangeNickname extends SettingsComponentContainer
 	@Override
 	public void buttonPressedChangeNickname(String newNick)
 	{
-		if (newNick.equals(session.getNickname()))
+		if (newNick.trim().equals(""))
 		{
-			this.setVisible(false);
+			textfieldNickname.setComponentError(new UserError("Username cannot be empty."));
 			return;
 		}
-		// TODO: Verify that nickname contains only allowed characters.
-		// TODO: Check that connection to network has been first initialized.
-		System.out.println("handling nick change...");
+		
+		irc.sendMessageToServer("/NICK " + newNick);
+		this.setVisible(false);
+		return;
 	}
 }

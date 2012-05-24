@@ -13,6 +13,13 @@ import VaadinIRC.settings;
  */
 public class IRC
 {
+	/** When IRC connection has not been established. */
+	public static final int CONNECTION_STATUS_DISCONNECTED = 0;
+	/** When IRC connection is currently connecting to the server. */
+	public static final int CONNECTION_STATUS_CONNECTING = 1;
+	/** When IRC connection has been established. */
+	public static final int CONNECTION_STATUS_CONNECTED = 2;
+	
 	/** GUI Interface for the IRC Client to syncronize data between IRC & GUI. */
     protected IRCInterface GUIInterface;
     /** IRC Session information. */
@@ -93,7 +100,8 @@ public class IRC
      */
     public boolean isConnectionRunning()
     {
-    	return GUIInterface.isDebugEnabled() == true ? true : isRunning;
+    	if (GUIInterface.isDebugEnabled()) return true;
+    	return isRunning;
     }
     
     /**
@@ -102,6 +110,17 @@ public class IRC
      */
     public void setConnectionRunning(boolean state)
     {
+    	if (state)
+    		GUIInterface.connectionStatusChanged(session.getServer(), CONNECTION_STATUS_CONNECTED);
+    	else
+    	{
+    		try
+			{
+				closeConnection();
+			}
+			catch (NoConnectionInitializedException e) { }
+    		GUIInterface.connectionStatusChanged(session.getServer(), CONNECTION_STATUS_DISCONNECTED);
+    	}
     	this.isRunning = state;
     }
     
@@ -121,7 +140,7 @@ public class IRC
     		writer.flush();
     		return true;
     	}
-    	catch (IOException e)
+    	catch (Exception e)
     	{
     		System.out.println("Error writing to buffer: " + e);
     		e.printStackTrace();
@@ -142,13 +161,20 @@ public class IRC
      * Closes the current connection to IRC server.
      * @throws NoConnectionInitializedException If connection was not initialized, this is thrown.
      */
-    public void closeConnection() throws NoConnectionInitializedException
+    private void closeConnection() throws NoConnectionInitializedException
     {
-    	if (!isConnectionRunning()) throw new NoConnectionInitializedException();
-    	
-    	isRunning = false;
-    	writeMessageToBuffer("QUIT");
-    	GUIInterface.receivedStatusMessage("Connection to network has been closed.");
+    	try
+    	{
+    		writeMessageToBuffer("QUIT");
+    	}
+    	catch (NoConnectionInitializedException e)
+    	{
+        	reader = null;
+        	writer = null;
+        	throw new NoConnectionInitializedException();
+    	}
+    	reader = null;
+    	writer = null;
     }
     
     /**

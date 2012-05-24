@@ -3,6 +3,7 @@ package irc.msghandlers;
 import java.util.HashMap;
 import java.util.Map;
 
+import irc.IRC;
 import irc.IRCEnums;
 import irc.IRCHelper;
 import irc.IRCInterface;
@@ -75,14 +76,11 @@ public class HandleErrorMessages extends MsgHandler
 	}
 	
 	@Override
-    public boolean handleLine(String ircRow)
+    public boolean handleLine(String ircRow, IRC ircApp)
     {
 		this.row = ircRow;
 		
-		int rowNumber = 0;
-		try { rowNumber = Integer.parseInt(IRCHelper.getRowType(row)); } catch (Exception e) { }
-		
-		if (errorReplies.containsKey(rowNumber))
+		if (errorReplies.containsKey(IRCHelper.getRowType(ircRow)))
 		{
 			irc.receivedErrorMessage(IRCHelper.getContentFromStdMessage(row));
 			return true;

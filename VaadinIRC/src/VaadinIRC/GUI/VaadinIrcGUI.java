@@ -2,7 +2,9 @@ package VaadinIRC.GUI;
 
 import java.util.Iterator;
 
+import VaadinIRC.main;
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
@@ -21,6 +23,8 @@ public class VaadinIrcGUI
 	protected Window window;
 	/** Contains the channel / user conversation tabs. */
 	protected TabSheet channelTabs;
+	/** Top information label located in topright corner of the application. */
+	protected Label topLabel;
 	/** Main application layout. */
 	protected VerticalLayout mainLayout;
 	
@@ -44,6 +48,8 @@ public class VaadinIrcGUI
 		//channelTabs.setSizeFull();
 		//window.addComponent(channelTabs);
 		mainLayout = new VerticalLayout();
+			topLabel = new Label("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_delete.png'/> Not connected to any network.</div>", Label.CONTENT_RAW);
+			mainLayout.addComponent(topLabel);
 			mainLayout.addComponent(channelTabs);
 			channelTabs.setSizeFull();
 			mainLayout.setExpandRatio(channelTabs, 1.0f);

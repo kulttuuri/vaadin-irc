@@ -112,8 +112,8 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	
 	/**
 	 * Adds standard channel message to the channel textarea. Repaints the panel and scrolls to bottom.
-	 * @param username
-	 * @param newMessage
+	 * @param username Message sender's nickname.
+	 * @param newMessage Message to be sent.
 	 */
 	public void addStandardChannelMessage(String username, String newMessage)
 	{
@@ -201,16 +201,22 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	public boolean changeUserNickname(String nickname, String newNickname)
 	{
 		List<Property> foundUsers = new ArrayList<Property>();
-		
 		// Iterate through all table items in row Nicknames and get all found rows to list
         for (Object id : tableNicknames.getItemIds())
         {
             String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
-            if (row.equals(nickname)) foundUsers.add(tableNicknames.getContainerProperty(id, "Nicknames"));
+            if (row.toString().trim().equals(nickname.toString().trim()))
+            {
+            	foundUsers.add(tableNicknames.getContainerProperty(id, "Nicknames"));
+            }
         }
         
 		// Change nickname on found users.
-        for (Property id : foundUsers) id.setValue(newNickname); 
+        for (Property id : foundUsers)
+        {
+        	id.setValue(newNickname);
+        	addMessageToChannelTextarea(nickname + " is now known as " + newNickname);
+        }
         sortNicknameTable();
 		ircInterface.pushChangesToClient();
 		return false;
@@ -221,8 +227,10 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	 * Deletes all found users, so if user was somehow added multiple times to table,
 	 * all the user nicknames will be removed from channel table.
 	 * @param nickname Nickname to be removed.
+	 * @param reason Quit reason.
+	 * @param announceReason Announce reason message?
 	 */
-	public void removeUserFromChannel(String nickname)
+	public void removeUserFromChannel(String nickname, String reason, boolean announceReason)
 	{
 		List<Object> toDelete = new ArrayList<Object>();
 		
@@ -230,11 +238,15 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
         for (Object id : tableNicknames.getItemIds())
         {
             String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
-            if (row.equals(nickname)) toDelete.add(id);
+            if (row.toString().trim().equals(nickname.toString().trim())) toDelete.add(id);
         }
         
 		// Delete all found items
-        for (Object id : toDelete) tableNicknames.removeItem(id);
+        for (Object id : toDelete)
+        {
+        	tableNicknames.removeItem(id);
+            if (announceReason) addMessageToChannelTextarea(nickname + " " + reason);
+        }
         sortNicknameTable();
 		ircInterface.pushChangesToClient();
 	}
@@ -242,7 +254,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	/**
 	 * Styles the channel GUI components.
 	 */
-	private void styleComponents()
+	public void styleComponents()
 	{
 		// Style title label
 			labelTitle.setStyleName("channelTitleLabel");
@@ -300,7 +312,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	/**
 	 * Creates the GUI for a channel.
 	 */
-	private void createChannelGUI()
+	public void createChannelGUI()
 	{
 		panel = new Panel();
 		panel.setCaption(channelName);
@@ -452,12 +464,11 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	public boolean setUserLevel(String nickname, String newLevel)
 	{
 		List<Property> foundUsers = new ArrayList<Property>();
-		
 		// Iterate through all table items in row Nicknames and get found nickname level row references to list
         for (Object id : tableNicknames.getItemIds())
         {
             String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
-            if (row.equals(nickname)) foundUsers.add(tableNicknames.getContainerProperty(id, "Rights"));
+            if (row.toString().trim().equals(nickname.toString().trim())) foundUsers.add(tableNicknames.getContainerProperty(id, "Rights"));
         }
 
         // Change userlevel on found users
@@ -467,7 +478,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
         	if (newLevel.startsWith("+"))
         	{
         		String lvl = newLevel.substring(1, 2);
-        		System.out.println("old value: " + oldLevel + " & new val: " + lvl);
+        		//System.out.println("old value: " + oldLevel + " & new val: " + lvl);
         		if (oldLevel.equals("") && lvl.equals("o")) { id.setValue("@"); addMessageToChannelTextarea("User " + nickname + " was opped."); sortNicknameTable(); return true; }
         		else if (oldLevel.equals("") && lvl.equals("v")) { id.setValue("+"); addMessageToChannelTextarea("User " + nickname + " was voiced."); sortNicknameTable(); return true; }
         		else if (oldLevel.equals("+") && lvl.equals("o")) { id.setValue("@"); addMessageToChannelTextarea("User " + nickname + " was opped."); sortNicknameTable(); return true; }
