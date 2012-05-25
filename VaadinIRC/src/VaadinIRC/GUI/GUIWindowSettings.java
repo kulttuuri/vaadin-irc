@@ -11,6 +11,7 @@ import com.vaadin.terminal.UserError;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Button.ClickEvent;
 
@@ -31,17 +32,23 @@ public class GUIWindowSettings extends SettingsComponentContainer
 	 * @param mainWindow Main application window.
 	 * @param session IRCSession.
 	 * @param irc IRCInterface.
-	 * @param askUsername Show also 
 	 */
 	public GUIWindowSettings(Window mainWindow, IRCSession session, IRCInterface irc)
 	{
 		super(mainWindow);
 		this.irc = irc;
 		this.session = session;
-		if (session.getServer() != null) textfieldServer.setValue(session.getServer());
-		String curPort = Integer.toString(session.getServerPort());
-		if (curPort != null && !curPort.equals("0")) textfieldPort.setValue(curPort);
-		if (session.getNickname() != null) textfieldNickname.setValue(session.getNickname());
+		if (session != null)
+		{
+			textfieldServer = new TextField();
+			textfieldPort = new TextField();
+			textfieldNickname = new TextField();
+			if (session.getServer() != null) textfieldServer.setValue(session.getServer());
+			String curPort = Integer.toString(session.getServerPort());
+			if (curPort != null && !curPort.equals("0")) textfieldPort.setValue(curPort);
+			if (session.getNickname() != null) textfieldNickname.setValue(session.getNickname());
+		}
+		createWindow();
 	}
 
 	@Override
@@ -51,11 +58,16 @@ public class GUIWindowSettings extends SettingsComponentContainer
 		setHeight(500, Sizeable.UNITS_PIXELS);
 		setWidth(400, Sizeable.UNITS_PIXELS);
 		center();
-		addtextfieldNickname();
-		addServerTextfield();
-		addServerPortTextfield();
-		addButtonConnect();
-		addButtonDisconnect();
+		if (irc == null) return;
+		if (!irc.isConnectionRunning())
+		{
+			addtextfieldNickname();
+			addServerTextfield();
+			addServerPortTextfield();
+			addButtonConnect();
+		}
+		else
+			addButtonDisconnect();
 	}
 	
 	@Override

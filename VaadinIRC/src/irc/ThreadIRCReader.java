@@ -81,7 +81,7 @@ public class ThreadIRCReader extends Thread
 		}
 		catch (TerminateConnectionException e)
 		{
-    		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+    		irc.GUIInterface.receivedErrorMessage("", "", e.getMessage());
 			irc.setConnectionRunning(false);
 			return;
 		}

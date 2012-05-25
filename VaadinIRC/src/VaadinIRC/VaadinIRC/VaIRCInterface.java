@@ -85,20 +85,20 @@ public class VaIRCInterface implements IRCInterface
 				String reason = "";
 				try { reason = rowSpaces.get(2); } catch (Exception e) { }
 				try { target = rowSpaces.get(1); } catch (Exception e) { }
-				sendMessageToUser(target, reason);
-				receivedNewPrivateMessage(target, reason);
+				sendMessageToUser(target.toLowerCase(), reason);
 				return true;
 			}
+			/*
 			else if (rowSpaces.get(0).equalsIgnoreCase("PRIVMSG"))
 			{
 				String target = "";
 				String reason = "";
 				try { reason = rowSpaces.get(2); } catch (Exception e) { }
 				try { target = rowSpaces.get(1); } catch (Exception e) { }
-				sendMessageToUser(target, reason);
-				receivedNewPrivateMessage(target, reason);
+				if (target.startsWith("#")) return false; // Skip channel messages
+				sendMessageToUser(target.toLowerCase(), reason);
 				return true;
-			}
+			}*/
 			else if (rowSpaces.get(0).equalsIgnoreCase("WC"))
 			{
 				if (!vairc.getSelectedChannelName().startsWith("#"))
@@ -205,7 +205,7 @@ public class VaIRCInterface implements IRCInterface
 	{
 		try
 		{
-			if (!vairc.containsChannel(user)) vairc.createChannel(user);
+			if (!vairc.containsChannel(user)) vairc.createPrivateConversation(user.toLowerCase(), message);
 			irc.writeMessageToBuffer("PRIVMSG " + user + " " + message);
 		}
 		catch (NoConnectionInitializedException e)
@@ -441,10 +441,16 @@ public class VaIRCInterface implements IRCInterface
 		pushChangesToClient();
 	}
 
-	public void receivedErrorMessage(String error)
+	public void receivedErrorMessage(String row, String errorCode, String errorMessage)
 	{
-		System.out.println("Error: " + error);
-		receivedStatusMessage(error);
+		ArrayList<String> rowSpaces = IRCHelper.splitCommandsToList(row, " ");
+		
+		if (errorCode.equals("401")) // :port80a.se.quakenet.org 401 joumataMou joumataasdqw :No such nick
+		{
+			receivedNewPrivateMessage(rowSpaces.get(3), errorMessage);
+		}
+		else
+			receivedStatusMessage(errorMessage);
 	}
 
 	public void otherChangedNickname(String oldNickname, String newNickname)
@@ -492,6 +498,7 @@ public class VaIRCInterface implements IRCInterface
 
 	public void receivedNewPrivateMessage(String nickname, String message)
 	{
+		nickname = nickname.toLowerCase();
 		if (!vairc.containsChannel(nickname)) vairc.createPrivateConversation(nickname, message);
 		try
 		{

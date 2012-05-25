@@ -48,7 +48,7 @@ public class HandleConnectMessages extends MsgHandler
 	{
 		row = ircRow;
 		
-		if (connectReplies.containsKey(IRCHelper.getRowType(row)))
+		if (connectReplies.containsKey(IRCHelper.getStdCommand(row)))
 		{
 			irc.receivedStatusMessage(IRCHelper.splitMessageAfterRow(row, " ", 3));
 			return false;
