@@ -79,6 +79,7 @@ public class IRC
     public void sendMessageToUser(String user, String message)
     {
     	// TODO: Implement.
+    	// TODO: Siirrä privmsg raw viestit tänne kutsumaan.
     }
     
     /**
@@ -101,6 +102,7 @@ public class IRC
     public boolean isConnectionRunning()
     {
     	if (GUIInterface.isDebugEnabled()) return true;
+    	if (reader == null || writer == null) return false;
     	return isRunning;
     }
     

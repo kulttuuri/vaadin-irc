@@ -8,6 +8,7 @@ import VaadinIRC.GUI.componentContainers.SettingsComponentContainer;
 
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.terminal.UserError;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
@@ -65,9 +66,19 @@ public class GUIWindowSettings extends SettingsComponentContainer
 			addServerTextfield();
 			addServerPortTextfield();
 			addButtonConnect();
+			
+			VerticalLayout mainL = (VerticalLayout)getContent();
+			mainL.setComponentAlignment(textfieldNickname, Alignment.MIDDLE_CENTER);
+			mainL.setComponentAlignment(textfieldServer, Alignment.MIDDLE_CENTER);
+			mainL.setComponentAlignment(textfieldPort, Alignment.MIDDLE_CENTER);
+			mainL.setComponentAlignment(buttonConnect, Alignment.MIDDLE_CENTER);
 		}
 		else
+		{
 			addButtonDisconnect();
+			VerticalLayout mainL = (VerticalLayout)getContent();
+			mainL.setComponentAlignment(buttonDisconnect, Alignment.MIDDLE_CENTER);
+		}
 	}
 	
 	@Override
@@ -104,6 +115,7 @@ public class GUIWindowSettings extends SettingsComponentContainer
 		}
 		textfieldPort.setComponentError(null);
 		
+		// TODO: Store old nickname.
 		// TODO: Validate nickname.
 		session.setNickname(textfieldNickname.getValue().toString());
 		session.setLogin("VaIRCUser");

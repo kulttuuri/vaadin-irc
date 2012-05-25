@@ -2,6 +2,7 @@ package VaadinIRC.VaadinIRC;
 
 import irc.IRC;
 import irc.IRCSession;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,6 +20,8 @@ import VaadinIRC.exceptions.ChannelNotFoundException;
 import com.vaadin.Application;
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.terminal.ThemeResource;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
@@ -224,7 +227,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	
 	/**
 	 * Sets bell icon for given channel if that channel is not selected for indicating that
-	 * there is new activity in that channel. 
+	 * there is new activity in that channel.
 	 * @param channelName Name of the channel.
 	 */
 	public void setChannelNewActivity(String channelName)
@@ -237,21 +240,22 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	}
 	
 	/**
-	 * Starts new private conversation window with given nickname.
+	 * Starts new private conversation window with given nickname.<br>
+	 * Converts nickname always to lower case format (IRC network is not case sensitive with nicknames).
 	 * @param nickname Target nickname.
-	 * @param message Message to be sent to user. Can be empty ("").
 	 */
-	public void createPrivateConversation(String nickname, String message)
+	public void createPrivateConversation(String nickname)
 	{
+		nickname = nickname.toLowerCase();
+		
 		// Add channel to list of channel maps and create new Tab to TabSheet out of it & select the newly created tab.
 		channelMap.put(nickname, new channelGUI(nickname, this, ircInterface));
 		channelTabs.addTab(channelMap.get(nickname).getChannelGUI(), nickname);
 		channelTabs.setSelectedTab(channelMap.get(nickname).getChannelGUI());
+		getTab(nickname).setClosable(true);
 		// Set icon for the channel
 		removeChannelActivity(nickname);
 		channelMap.get(nickname).addMessageToChannelTextarea("Started private conversation with " + nickname + ".");
-		if (message != null && !message.trim().equals(""))
-			ircInterface.receivedNewPrivateMessage(nickname, message);
 	}
 	
 	/**
@@ -270,7 +274,11 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		// Set icon for the channel
 		removeChannelActivity(channelName);
 		
-		if (!channelName.equals("status")) channelMap.get(channelName).addMessageToChannelTextarea("Joined channel " + channelName + ".");
+		if (!channelName.equals("status"))
+		{
+			channelMap.get(channelName).addMessageToChannelTextarea("Joined channel " + channelName + ".");
+			getTab(channelName).setClosable(true);
+		}
 	}
 	
 	/**
@@ -313,5 +321,13 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	public void selectedTabChange(SelectedTabChangeEvent event)
 	{
 		removeChannelActivity(channelTabs.getSelectedTab().getCaption());
+	}
+
+	@Override
+	public void onTabClose(TabSheet tabsheet, Component tabContent)
+	{
+		String name = tabContent.getCaption();
+		if (name.startsWith("#")) ircInterface.sendMessageToServer("/PART " + name);
+		ircInterface.leftChannel(name, session.getServer());
 	}
 }

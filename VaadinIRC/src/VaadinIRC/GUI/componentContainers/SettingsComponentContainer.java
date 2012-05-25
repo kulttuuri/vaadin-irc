@@ -82,6 +82,7 @@ public abstract class SettingsComponentContainer extends AbstractComponentContai
 	 */
 	public void addButtonConnect()
 	{
+		addComponent(new Label("<br>", Label.CONTENT_RAW));
 		buttonConnect = new Button("Connect to Server");
 		buttonConnect.addListener(new Button.ClickListener() { public void buttonClick(ClickEvent event) { buttonPressedConnectToServer(); } });
 		addComponent(buttonConnect);

@@ -8,6 +8,7 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.TabSheet.CloseHandler;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.TabSheet.Tab;
@@ -17,7 +18,7 @@ import com.vaadin.ui.TabSheet.Tab;
  * @author Aleksi Postari
  *
  */
-public class VaadinIrcGUI
+public abstract class VaadinIrcGUI implements CloseHandler
 {
 	/** Contains reference to Vaadin application main window. */
 	protected Window window;
@@ -52,6 +53,7 @@ public class VaadinIrcGUI
 			mainLayout.addComponent(topLabel);
 			mainLayout.addComponent(channelTabs);
 			channelTabs.setSizeFull();
+			channelTabs.setCloseHandler(this);
 			mainLayout.setExpandRatio(channelTabs, 1.0f);
 			mainLayout.setSizeFull();
 		window.addComponent(mainLayout);
@@ -77,4 +79,6 @@ public class VaadinIrcGUI
 		}
 		return null;
 	}
+
+	public abstract void onTabClose(TabSheet tabsheet, Component tabContent);
 }

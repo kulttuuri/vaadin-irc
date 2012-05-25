@@ -1,12 +1,18 @@
 package irc.msghandlers;
 
-import static irc.IRCHelper.*;
-import java.util.ArrayList;
+import static irc.IRCHelper.getChannelFromStdMessage;
+import static irc.IRCHelper.getContentFromStdMessage;
+import static irc.IRCHelper.getModeTargetUsers;
+import static irc.IRCHelper.getNicknameFromStdMessage;
+import static irc.IRCHelper.getStdReason;
+import static irc.IRCHelper.splitCommandsToList;
+import static irc.IRCHelper.splitMessageAfterRow;
 import irc.IRC;
 import irc.IRCHelper;
 import irc.IRCInterface;
 import irc.IRCSession;
 import irc.exceptions.TerminateConnectionException;
+import java.util.ArrayList;
 
 /**
  * To handle extra IRC messages without any numeric codes.<br>
@@ -33,6 +39,7 @@ public class HandleExtraMessages extends MsgHandler
     	// Current message splitted with spaces
     	ArrayList<String> rowSpaces = new ArrayList<String>();
     	rowSpaces = IRCHelper.splitCommandsToList(row, " ");
+    	
 		// PING
     	if (row.startsWith("PING"))
     	{
@@ -120,11 +127,17 @@ public class HandleExtraMessages extends MsgHandler
         	else
         		irc.otherQuitNetwork(getNicknameFromStdMessage(row), session.getServer(), getStdReason(row));
         }
+		// ERROR
         else if (row.startsWith("ERROR"))
         {
         	String reason = row.replace("ERROR :", "");
         	irc.quitNetwork(session.getServer(), reason);
         	throw new TerminateConnectionException(reason);
+        }
+		// AUTO-AWAY (DEBUG: did read line: :port80a.se.quakenet.org 301 joumatamou Kulttuuri :Auto-away)
+        else if (checkCommand("301"))
+        {
+        	irc.receivedNewPrivateMessage(rowSpaces.get(3), getStdReason(row));
         }
 		// If command was not handled, return false.
 		else
