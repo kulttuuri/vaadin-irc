@@ -1,5 +1,6 @@
 package VaadinIRC.VaadinIRC;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -205,7 +206,7 @@ public class VaIRCInterface implements IRCInterface
 	{
 		try
 		{
-			if (!vairc.containsChannel(user)) vairc.createPrivateConversation(user.toLowerCase(), message);
+			if (!vairc.containsChannel(user)) vairc.createPrivateConversation(user.toLowerCase());
 			irc.writeMessageToBuffer("PRIVMSG " + user + " " + message);
 		}
 		catch (NoConnectionInitializedException e)
@@ -499,7 +500,7 @@ public class VaIRCInterface implements IRCInterface
 	public void receivedNewPrivateMessage(String nickname, String message)
 	{
 		nickname = nickname.toLowerCase();
-		if (!vairc.containsChannel(nickname)) vairc.createPrivateConversation(nickname, message);
+		if (!vairc.containsChannel(nickname)) vairc.createPrivateConversation(nickname);
 		try
 		{
 			vairc.getChannel(nickname).addStandardChannelMessage(nickname, message);

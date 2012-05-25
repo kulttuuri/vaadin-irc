@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.Socket;
+import VaadinIRC.settings;
 
 /**
  * Thread for connecting to IRC server in separate thread so that actual program does not hang up while connecting.
@@ -74,9 +75,15 @@ public class ThreadIRCConnect extends Thread
         }
 
         // Create new buffered writer of the connection
-        irc.writer = new BufferedWriter(new OutputStreamWriter(irc.socket.getOutputStream()));
+        if (settings.WRITER_ENCODING.equals(""))
+        	irc.writer = new BufferedWriter(new OutputStreamWriter(irc.socket.getOutputStream()));
+        else
+        	irc.writer = new BufferedWriter(new OutputStreamWriter(irc.socket.getOutputStream(), settings.WRITER_ENCODING));
         // Create new buffered reader of the connection
-        irc.reader = new BufferedReader(new InputStreamReader(irc.socket.getInputStream()));
+        if (settings.READER_ENCODING.equals(""))
+        	irc.reader = new BufferedReader(new InputStreamReader(irc.socket.getInputStream()));
+        else
+        	irc.reader = new BufferedReader(new InputStreamReader(irc.socket.getInputStream(), settings.READER_ENCODING));
 
         // Connect to IRC Server
         try
