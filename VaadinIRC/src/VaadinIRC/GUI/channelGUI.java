@@ -376,6 +376,8 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 		tableNicknames.addContainerProperty("Nicknames", String.class, null);
 		tableNicknames.setSelectable(true);
 		
+		textfieldMessagefield.focus();
+		
 		//mainVerticalLayout.setSizeFull();
 		panel.addComponent(mainVerticalLayout);
 	}
