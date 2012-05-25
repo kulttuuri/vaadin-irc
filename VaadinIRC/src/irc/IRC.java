@@ -1,5 +1,6 @@
 package irc;
 
+import irc.bot.IRCBot;
 import irc.exceptions.NoConnectionInitializedException;
 import java.io.*;
 import java.net.*;
@@ -32,8 +33,10 @@ public class IRC
     protected BufferedWriter writer;
     /** BufferedReader used to read data from IRC server. */
     protected BufferedReader reader;
-    /** Thread for reading from IRC connection socket */
+    /** Thread for reading from IRC connection socket. */
     ThreadIRCReader threadIRCReader;
+    /** @see IRCBot */
+    IRCBot ircbot;
 
     /**
      * Constructor to initialize new IRC and connect to server.
@@ -46,6 +49,8 @@ public class IRC
     {
     	this.GUIInterface = GUIInterface;
     	this.session = session;
+    	this.ircbot = new IRCBot(settings.IRCBOT_ENABLED, settings.IRCBOT_DATABASE_ADDRESS,
+    		settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD, settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME);
     }
 
     /**
