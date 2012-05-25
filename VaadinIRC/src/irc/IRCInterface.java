@@ -146,9 +146,11 @@ public abstract interface IRCInterface
 	
 	/**
 	 * When user receives error message from server (codes 400-599)
-	 * @param error Error message.
+	 * @param row {@link irc.JavadocLibrary#row}
+	 * @param errorCode Error code number.
+	 * @param error Error message (reason).
 	 */
-	public abstract void receivedErrorMessage(String error);
+	public abstract void receivedErrorMessage(String row, String errorCode, String errorMessage);
 	
 	/**
 	 * User did quit from network.

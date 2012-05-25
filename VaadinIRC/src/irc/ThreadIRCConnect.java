@@ -110,14 +110,14 @@ public class ThreadIRCConnect extends Thread
         	}
         	catch (InvalidNicknameException e)
         	{
-        		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+        		irc.GUIInterface.receivedErrorMessage("", "", e.getMessage());
         		irc.setConnectionRunning(false);
         		connected = false;
         		break;
         	}
         	catch (NicknameAlreadyInUseException e)
         	{
-        		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+        		irc.GUIInterface.receivedErrorMessage("", "", e.getMessage());
         		irc.setConnectionRunning(false);
         		connected = false;
         		break;
@@ -130,7 +130,7 @@ public class ThreadIRCConnect extends Thread
 			}
 			catch (TerminateConnectionException e)
 			{
-        		irc.GUIInterface.receivedErrorMessage(e.getMessage());
+        		irc.GUIInterface.receivedErrorMessage("", "", e.getMessage());
 				irc.setConnectionRunning(false);
 				break;
 			}

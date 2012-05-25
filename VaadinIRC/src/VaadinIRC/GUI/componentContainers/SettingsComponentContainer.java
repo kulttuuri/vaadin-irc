@@ -93,7 +93,6 @@ public abstract class SettingsComponentContainer extends AbstractComponentContai
 	 */
 	public void addButtonDisconnect()
 	{
-		addComponent(new Label("---"));
 		buttonDisconnect = new Button("Disconnect from Server");
 		buttonDisconnect.addListener(new Button.ClickListener() { public void buttonClick(ClickEvent event) { buttonPressedDisconnectFromServer(); } });
 		addComponent(buttonDisconnect);

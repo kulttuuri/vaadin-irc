@@ -251,7 +251,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		removeChannelActivity(nickname);
 		channelMap.get(nickname).addMessageToChannelTextarea("Started private conversation with " + nickname + ".");
 		if (message != null && !message.trim().equals(""))
-			ircInterface.receivedNewPrivateMessage(session.getNickname(), message);
+			ircInterface.receivedNewPrivateMessage(nickname, message);
 	}
 	
 	/**
@@ -281,10 +281,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		// Iterate through all channels
 		ArrayList<String> channels = new ArrayList<String>();
 		Collection c = channelMap.values(); Iterator itr = c.iterator();
-		while (itr.hasNext())
-		{
-			channels.add(((channelGUI)itr.next()).getChannelName());
-		}
+		while (itr.hasNext()) channels.add(((channelGUI)itr.next()).getChannelName());
 		// Remove all channels except status channel
 		for (String channel : channels)
 		{
@@ -292,7 +289,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 			{
 				if (getTab(channel) == null) continue;
 				channelTabs.removeTab(getTab(channel));
-				channels.remove(channel);
+				channelMap.remove(channel);
 			}
 		}
 	}

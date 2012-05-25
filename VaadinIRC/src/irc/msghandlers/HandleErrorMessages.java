@@ -80,9 +80,9 @@ public class HandleErrorMessages extends MsgHandler
     {
 		this.row = ircRow;
 		
-		if (errorReplies.containsKey(IRCHelper.getRowType(ircRow)))
+		if (errorReplies.containsKey(IRCHelper.getStdCommand(row)))
 		{
-			irc.receivedErrorMessage(IRCHelper.getContentFromStdMessage(row));
+			irc.receivedErrorMessage(row, IRCHelper.getStdCommand(row), IRCHelper.getContentFromStdMessage(row));
 			return true;
 		}
 		return false;
