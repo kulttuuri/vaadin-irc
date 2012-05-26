@@ -189,6 +189,12 @@ public class VaIRCInterface implements IRCInterface
 	
 	public boolean sendMessageToChannel(String channel, String message)
 	{
+		// TODO: DEBUG: ADD DIRECTLY TO CHANNEL
+		if (true == true)
+		{
+			receivedNewMessage("botti", message, channel);
+		}
+		
 		try
 		{
 			irc.sendMessageToChannel(channel, message);

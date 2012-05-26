@@ -63,11 +63,16 @@ public class HandleExtraMessages extends MsgHandler
         // PRIVMSG (Channel / private message)
         else if (!row.startsWith(":" + session.getNickname()) && checkCommand("PRIVMSG"))
         {
+        	// Channel message
         	if (getChannelFromStdMessage(row).startsWith("#"))
         	{
-        	if (!getNicknameFromStdMessage(row).equals(session.getNickname()))
-        		irc.receivedNewMessage(getNicknameFromStdMessage(row), getContentFromStdMessage(row), getChannelFromStdMessage(row));
+        		if (!getNicknameFromStdMessage(row).equals(session.getNickname()))
+        		{
+        			irc.receivedNewMessage(getNicknameFromStdMessage(row), getContentFromStdMessage(row), getChannelFromStdMessage(row));
+        			ircApp.sendMessageToBot(row);
+        		}
         	}
+        	// Private message
         	else
         	{
         		irc.receivedNewPrivateMessage(getNicknameFromStdMessage(row), getStdReason(row));

@@ -6,14 +6,9 @@ import com.vaadin.Application;
 import com.vaadin.ui.*;
 
 /*
- * TODO: Disconnect heitt‰‰ errorin.
  * TODO: Status channelin viestit liian lyhyit‰ (Word wrappaa perus channelin tavoin)
- * TODO: Nick ongelmia. Omaa nickin vaihtamista ei huomioida nyt channeleilla. /NICK komennolla tehty‰ nimenvaihtoa ei huomioida nyt.
  * TODO: Error replies: http://www.irchelp.org/irchelp/rfc/chapter6.html#c6_3
  * TODO: Siirr‰ icepush jutut pois interfacesta.
- * TODO: oma oppaus ja voice ei toiminut irkiss‰.
- * TODO: ChannelGUI component container.
- * TODO: Kun vaihtaa nickin min‰ tai joku muu: DEBUG: did read line: :ASDQWEASD!~null@a91-152-121-162.elisa-laajakaista.fi NICK :testaaja
  * TODO: Turn off serialization: http://dev-answers.blogspot.com/2007/03/how-to-turn-off-tomcat-session.html
  * TODO: External configurations file tai sitten passaa komentorivilt‰ parametrit.
  * TODO: Settingsist‰ pituus ja korkeus (ja prossina vai pikselein‰)
