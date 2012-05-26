@@ -44,4 +44,6 @@ public class settings
 	public static final String IRCBOT_DATABASE_USERNAME = "root";
 	/** Database username's password. */
 	public static final String IRCBOT_DATABASE_PASSWORD = "";
+	/** First sign that is used to call bot commands. Defaults to ! */
+	public static final String IRCBOT_BOT_CALL_SIGN = "!";
 }

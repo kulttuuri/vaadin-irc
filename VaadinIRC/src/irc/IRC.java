@@ -36,7 +36,7 @@ public class IRC
     /** Thread for reading from IRC connection socket. */
     ThreadIRCReader threadIRCReader;
     /** @see IRCBot */
-    IRCBot ircbot;
+    private IRCBot ircbot;
 
     /**
      * Constructor to initialize new IRC and connect to server.
@@ -50,9 +50,19 @@ public class IRC
     	this.GUIInterface = GUIInterface;
     	this.session = session;
     	this.ircbot = new IRCBot(settings.IRCBOT_ENABLED, settings.IRCBOT_DATABASE_ADDRESS,
-    		settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD, settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME);
+    		settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD,
+    		settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN);
     }
 
+    /**
+     * Sends new channel message to irc bot.
+     * @param row {@link irc.JavadocLibrary#row}
+     */
+    public void sendMessageToBot(String row)
+    {
+    	ircbot.receivedChannelMessage(this, GUIInterface, row);
+    }
+    
     /**
      * Debug function. Used to send messages for irc reader to be handled.
      * @param message Message to be sent.
@@ -150,7 +160,7 @@ public class IRC
     	catch (Exception e)
     	{
     		System.out.println("Error writing to buffer: " + e);
-    		e.printStackTrace();
+    		//e.printStackTrace();
     	}
     	return false;
     }

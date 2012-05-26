@@ -17,7 +17,7 @@ import java.util.Map;
 public abstract class IRCBotSQL
 {
 	/** IRCBot enabled? */
-	protected String enabled;
+	protected boolean enabled;
 	/** Database address */
 	private String address;
 	/** Database username */
@@ -33,6 +33,7 @@ public abstract class IRCBotSQL
 	
 	public IRCBotSQL(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName)
 	{
+		this.enabled = enabled;
 		this.address = address;
 		this.username = username;
 		this.password = password;
@@ -49,17 +50,15 @@ public abstract class IRCBotSQL
 			enabled = false;
 		}
 		
-		ArrayList<String> items = new ArrayList<String>();
-		items.add("name");
-		Map<String, String> where = new HashMap<String, String>();
-		where.put("sender", "kulttuuri");
 		try
 		{
-			ArrayList<String> data = getDataFromDatabase("defines", items, where);
-			if (data.size() > 0) System.out.println("joo: " + data.get(0));
+			ResultSet results = executeQuery("SELECT * FROM defines WHERE nickname = 'kulttuuri'");
+			while (results.next())
+				System.out.println("result: " + results.getString("content"));
 		}
 		catch (SQLException e)
 		{
+			System.out.println("query: " + e);
 			e.printStackTrace();
 		}
 	}
@@ -96,18 +95,55 @@ public abstract class IRCBotSQL
 		} 
 	}
 	
-	protected void setCurrentDatabase(String databaseName) throws SQLException
+	/**
+	 * Executes given query that fetches data from database 
+	 * and returns the resulted ResultSet object.
+	 * @param queryString SQL query.
+	 * @return Returns the resulted Resultset Object for the given query.
+	 * @throws SQLException If SQL exception did happen (for ex. invalid SQL syntax), this gets thrown.
+	 */
+	protected ResultSet executeQuery(String queryString) throws SQLException
 	{
+		Statement query;
+		query = connection.createStatement();
+		return query.executeQuery(queryString);
+	}
+	
+	/**
+	 * Executes given UPDATE, INSERT or DELETE query.
+	 * @param queryString SQL query which needs to be executed.
+	 * @return Returns Returns the affected row amount (0 for no changes).
+	 * @throws SQLException If SQL exception did happen (for ex. invalid SQL syntax), this gets thrown.
+	 */
+	protected int executeUpdate(String queryString) throws SQLException
+	{
+		Statement query;
+		query = connection.createStatement();
+		return query.executeUpdate(queryString);
+	}
+	
+	/**
+	 * Returns the amount of found rows for given SQL query.
+	 * @param queryString SQL query.
+	 * @return Returns the amount of rows for given SQL query.
+	 */
+	protected int getAmountOfRowsForQuery(String queryString)
+	{
+		int rowAmount = 0;
 		try
 		{
-			executeCustomQuery("USE " + databaseName);
+			ResultSet results = executeQuery(queryString);
+			while (results.next()) rowAmount++;
 		}
 		catch (SQLException e)
 		{
-			throw e;
+			System.out.println("Could not fetch row amount: " + e);
+			rowAmount = 0;
 		}
+		return rowAmount;
 	}
 	
+	@Deprecated
 	protected void executeCustomQuery(String query) throws SQLException
 	{
 			Statement stQuery;
@@ -116,12 +152,45 @@ public abstract class IRCBotSQL
 				stQuery = connection.createStatement();
 				stQuery.executeQuery(query);
 			}
+			catch (NullPointerException e)
+			{
+				// No results found
+			}
 			catch (SQLException e)
 			{
 				throw e;
 			}
 	}
 	
+	@Deprecated
+	protected ArrayList<String> getSingleDataFromDatabase(String table, String item, String whereItem, String whereData) throws SQLException
+	{
+		ArrayList<String> returnList = new ArrayList<String>();
+		try
+		{
+			Statement stQuery = connection.createStatement();
+			String query = "SELECT " + item + " FROM " + table + " WHERE " + whereItem + " = '" + whereData + "'";
+			ResultSet results = stQuery.executeQuery(query);
+			// Go through found items and add them to return list.
+			while (results.next())
+				returnList.add(results.getString(item));
+		}
+		catch (SQLException e)
+		{
+			throw e;
+		}
+		catch (NullPointerException e)
+		{
+			// No results found
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		return returnList;
+	}
+	
+	@Deprecated
 	protected ArrayList<String> getDataFromDatabase(String table, ArrayList<String> items, Map<String, String> where) throws SQLException
 	{
 		ArrayList<String> returnList = new ArrayList<String>();
@@ -136,7 +205,7 @@ public abstract class IRCBotSQL
 				if (where.size() > 0) query += " WHERE";
 				for (Map.Entry<String, String> entry : where.entrySet())
 				{
-					query += " " + entry.getKey() + " = " + entry.getValue() + " AND";
+					query += " " + entry.getKey() + " = '" + entry.getValue() + "' AND";
 				}
 				// Strip last AND from query if it exists.
 				if (query.substring(query.length()-3, query.length()).equals("AND")) query = query.substring(0, query.length()-3);
@@ -150,6 +219,10 @@ public abstract class IRCBotSQL
 		catch (SQLException e)
 		{
 			throw e;
+		}
+		catch (NullPointerException e)
+		{
+			// No results found
 		}
 		catch (Exception e)
 		{
