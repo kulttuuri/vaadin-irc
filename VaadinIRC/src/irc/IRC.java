@@ -71,6 +71,22 @@ public class IRC
     }
     
     /**
+     * When user joins, will send join message to bot for handling.
+     * @param row {@link irc.JavadocLibrary#row}
+     */
+    public void sendJoinMessageToBot(String row)
+    {
+    	try
+    	{
+    		ircbot.joinedChannel(this, GUIInterface, row);
+    	}
+    	catch (Exception e)
+    	{
+    		System.out.println("Error handling bot command: " + e);
+    	}
+    }
+    
+    /**
      * Debug function. Used to send messages for irc reader to be handled.
      * @param message Message to be sent.
      */

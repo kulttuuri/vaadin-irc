@@ -56,7 +56,10 @@ public class HandleExtraMessages extends MsgHandler
         	if (getNicknameFromStdMessage(row).equals(session.getNickname()))
         		irc.joinedChannel(getChannelFromStdMessage(row), session.getServer());
         	else
+        	{
         		irc.otherJoinedChannel(getChannelFromStdMessage(row), session.getServer(), getNicknameFromStdMessage(row));
+        		ircApp.sendJoinMessageToBot(row);
+        	}
         	// Wait so that channel will have time to get generated
         	try { Thread.sleep(1000); } catch (InterruptedException e) { }
         }

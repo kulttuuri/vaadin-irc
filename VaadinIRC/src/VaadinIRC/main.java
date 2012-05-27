@@ -14,6 +14,9 @@ import com.vaadin.ui.*;
  * TODO: Settingsistä pituus ja korkeus (ja prossina vai pikseleinä)
  * Muuta: http://blog.initprogram.com/2010/10/14/a-quick-basic-primer-on-the-irc-protocol/
  * IRC Numerics: http://www.mirc.net/raws/#top
+ * Threadeihin timeout checkkaus (jos yli 300s viime timeoutista, niin tapa threadit)
+ * Tarkista clientiltä onko vielä connectannut tietyin väliajoin.
+ * Vielä ei oo 100% widthissä kanavan tekstit
  */
 
 /**

@@ -181,29 +181,109 @@ public class IRCBotCommands extends IRCBotSQL
 		return returnMsg;
 	}
 	
-	protected void getJoinMessage(String nickname)
+	protected void getRandomSentenceFromUser(String nickname, String channel, String search)
 	{
 		
 	}
 	
-	protected void addJoinMessage(String nickname, String message)
+	/**
+	 * Tries to get join message for a user.
+	 * @param nickname Target nickname.
+	 * @param channel Name of the channel.
+	 * @return Returns the join message for given nickname if it exists. If does not exist, will return "".
+	 */
+	protected String getJoinMessage(String nickname, String channel)
 	{
-		
+		String returnString = "";
+		try
+		{
+			ResultSet results = executeQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'");
+			while (results.next()) returnString = results.getString("message");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return "";
+		}
+		return returnString;
 	}
 	
-	protected void removeJoinMessage(String nickname)
+	/**
+	 * Changes join message for given user.
+	 * @param nickname Target nickname.
+	 * @param message New join message.
+	 * @param channel Name of the channel.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String changeJoinMessage(String nickname, String message, String channel)
 	{
-		
+		String CHANGED = "Changed join message for user " + nickname + " to " + message + ".";
+		String DOES_NOT_EXIST = "Join message for user " + nickname + " does not exist.";
+		try
+		{
+			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'") == 0)
+				return DOES_NOT_EXIST;
+			
+			int results = executeUpdate("UPDATE joinmessages SET message = '" + message + "' WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'");
+			if (results == 0) throw new SQLException();
+		}
+		catch (SQLException e)
+		{
+			System.out.println(e.toString());
+			e.printStackTrace();
+			return DOES_NOT_EXIST;
+		}
+		return CHANGED;
 	}
 	
-	protected void joinMessage(String nickname)
+	/**
+	 * Adds new join message for user.
+	 * @param nickname Target nickname for whom the join message will be added to.
+	 * @param message Message to be added when user joins the channel.
+	 * @param channel Channel.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String addJoinMessage(String nickname, String message, String channel)
 	{
-		
+		String ADDED = nickname + ": Added join message " + message + " to user " + nickname + ".";
+		String ALREADY_EXISTS = nickname + ": Join message for user " + nickname + " already exists. Use changejoinmsg to modify existing messages.";
+		try
+		{
+			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "'") > 0)
+				return ALREADY_EXISTS;
+			
+			int results = executeUpdate("INSERT INTO joinmessages (nickname, message, channel) VALUES ('"+nickname+"','"+message+"','"+channel+"')");
+			if (results == 0) throw new SQLException();
+		}
+		catch (SQLException e)
+		{
+			System.out.println(e.toString());
+			e.printStackTrace();
+			return ALREADY_EXISTS;
+		}
+		return ADDED;
 	}
 	
-	protected void getRandomSentence(String nickname, String channel, String search)
+	/**
+	 * Removes join message from a user.
+	 * @param nickname Target nickname for whom the join message will be removed from. 
+	 * @param channel Channel name.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String removeJoinMessage(String nickname, String channel)
 	{
-		
+		String DOES_NOT_EXIST = "Join message for user " + nickname + " does not exist.";
+		String REMOVED = "Removed join message for user " + nickname + ".";
+		try
+		{
+			int results = executeUpdate("DELETE FROM joinmessages WHERE nickname = '" + nickname + "'");
+			if (results == 0) throw new SQLException();
+		}
+		catch (SQLException e)
+		{
+			return DOES_NOT_EXIST;
+		}
+		return REMOVED;
 	}
 	
 	/**
