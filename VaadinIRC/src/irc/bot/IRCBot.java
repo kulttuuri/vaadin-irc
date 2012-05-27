@@ -85,6 +85,22 @@ public class IRCBot extends IRCBotCommands
 			{
 				ircgui.sendMessageToChannel(channel, getBotInfo());
 			}
+			// Randomnick
+			if (message.startsWith(botCallSign + "randomnick"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, "Syntax: randomnick nickname ?#channel");
+				else
+					ircgui.sendMessageToChannel(channel, getRandomSentenceFromUser(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
+			}
+			// Searchlogs
+			/*if (message.startsWith(botCallSign + "searchlogs"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, "Syntax: searchlogs search");
+				else
+					ircgui.sendMessageToChannel(channel, searchFromLogs(IRCHelper.splitMessageAfterRow(row, " ", 4), channel));
+			}*/
 			// Chanstats
 			else if (message.startsWith(botCallSign + "chanstats"))
 			{

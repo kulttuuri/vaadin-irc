@@ -65,19 +65,18 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	/** Used for debug purposes. */
 	public void debug(IRCSession session)
 	{
-		session.setNickname("asdasd2");
-		ircInterface.debugSendMessage(":asdasd2!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #testikannu12345");
+		session.setNickname("oma");
+		ircInterface.debugSendMessage(":oma!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #testikannu12345");
 		ircInterface.debugSendMessage(":port80a.se.quakenet.org 332 VaAle #testikannu12345 :TIKOLAN4 8.6 - 10.6. Tiedepuistolla! Taavi, Pessu, Poppis, Z0a, EImo, VuNe");
 		ArrayList<String> users = new ArrayList<String>();
 		users.add("@Aleksi");
 		users.add("+Testaaja");
 		users.add("+vairc");
-		users.add("asdasd2");
+		users.add("oma");
 		users.add("user");
 		ircInterface.userListChanged("#testikannu12345", users);
-		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #testikannu12345 :" +
-				"asd");
-		//ircInterface.debugSendMessage(":asd!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #testikannu12345");
+		ircInterface.debugSendMessage(":oma!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #tiko-jns");
+		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :!randomnick kulttuuri");
 	}
 	
 	/**

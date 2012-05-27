@@ -133,17 +133,26 @@ public class IRCBotCommands extends IRCBotSQL
 		return returnMsg;
 	}
 	
-	protected String searchFromLogs(String nickname, String search, int amount)
+	/**
+	 * Searches from all channel messages for given search term.
+	 * @param search Search term.
+	 * @param channel Channel.
+	 * @return Returns the success message for the operation.
+	 * @deprecated Does not work. Will need to be implemented. TODO: Implement.
+	 */
+	@Deprecated
+	protected String searchFromLogs(String search, String channel)
 	{
-		String SEARCH_NOT_FOUND = nickname + ": Cannot find messages that contains " + search;
+		search = search.trim();
+		String SEARCH_NOT_FOUND = "Cannot find messages that contain " + search;
 		String returnMessage = "";
 		try
 		{
-			int resultAmount = getAmountOfRowsForQuery("SELECT content FROM chanmessages WHERE content LIKE '%"+search+"%");
+			int resultAmount = getAmountOfRowsForQuery("SELECT content FROM chanmessages WHERE channel = '"+channel+"' AND content LIKE '%"+search+"%'");
 			if (resultAmount < 1) return SEARCH_NOT_FOUND;
-			if (resultAmount > 1) return "Found multiple results for search " + search + ". To get result at index, type: "+botCallSign+"searchrow <index> " + search;
-			ResultSet result = executeQuery("SELECT content FROM chanmessages WHERE content LIKE '%"+search+"%");
-			while (result.next()) returnMessage = "Result for " +  search + ": " + result.getString("content");
+			if (resultAmount > 1) return "Found multiple results for search " + search + " ("+resultAmount+" results). To get result at index, type: "+botCallSign+"searchrow index|random " + search;
+			ResultSet result = executeQuery("SELECT content FROM chanmessages WHERE channel = '"+channel+"' AND content LIKE '%"+search+"%");
+			while (result.next()) returnMessage = "Result for " +  search + ": " + result.getString("added") + " <" + result.getString("nickname") + "> " + result.getString("content");
 		}
 		catch (SQLException e)
 		{
@@ -181,9 +190,28 @@ public class IRCBotCommands extends IRCBotSQL
 		return returnMsg;
 	}
 	
-	protected void getRandomSentenceFromUser(String nickname, String channel, String search)
+	/**
+	 * Used to get random sentence from given user on given channel.
+	 * @param nickname Nickname.
+	 * @param channel Channel.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String getRandomSentenceFromUser(String nickname, String channel)
 	{
-		
+		String USER_NOT_FOUND = "Username " + nickname + " was not found in the logs for channel " + channel + ".";
+		String returnString = "";
+		try
+		{
+			ResultSet results = executeQuery("SELECT content, sent FROM chanmessages WHERE nickname = '"+nickname+"' AND channel = '"+channel+"' ORDER BY RAND() LIMIT 1");
+			while (results.next()) returnString = results.getString("sent") + " " + nickname + ": " + results.getString("content");
+			if (returnString == null || returnString.equals("")) return USER_NOT_FOUND;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return USER_NOT_FOUND;
+		}
+		return returnString;
 	}
 	
 	/**
@@ -245,8 +273,8 @@ public class IRCBotCommands extends IRCBotSQL
 	 */
 	protected String addJoinMessage(String nickname, String message, String channel)
 	{
-		String ADDED = nickname + ": Added join message " + message + " to user " + nickname + ".";
-		String ALREADY_EXISTS = nickname + ": Join message for user " + nickname + " already exists. Use changejoinmsg to modify existing messages.";
+		String ADDED = "Added join message " + message + " to user " + nickname + ".";
+		String ALREADY_EXISTS = "Join message for user " + nickname + " already exists. Use changejoinmsg to modify existing messages.";
 		try
 		{
 			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "'") > 0)
@@ -306,8 +334,8 @@ public class IRCBotCommands extends IRCBotSQL
 	 */
 	protected String addDefine(String nickname, String define, String content, String channel)
 	{
-		String DEFINE_ADDED = nickname + ": Added define " + define + ".";
-		String DEFINE_ALREADY_EXISTS = nickname + ": Define " + define + " already exists. Use defchange to modify existing defines.";
+		String DEFINE_ADDED = "Added define " + define + ".";
+		String DEFINE_ALREADY_EXISTS = "Define " + define + " already exists. Use defchange to modify existing defines.";
 		try
 		{
 			if (getAmountOfRowsForQuery("SELECT content FROM defines WHERE define = '" + define + "'") > 0)

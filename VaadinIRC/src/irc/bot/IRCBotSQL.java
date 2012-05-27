@@ -42,24 +42,13 @@ public abstract class IRCBotSQL
 		try
 		{
 			initDatabaseConnection();
+			System.out.println("Connection to database has been initialized succesfully! Bot should be operating now.");
 		}
 		catch (Exception e)
 		{
 			System.out.println("Could not initialize database connection: " + e);
 			e.printStackTrace();
 			enabled = false;
-		}
-		
-		try
-		{
-			ResultSet results = executeQuery("SELECT * FROM defines WHERE nickname = 'kulttuuri'");
-			while (results.next())
-				System.out.println("result: " + results.getString("content"));
-		}
-		catch (SQLException e)
-		{
-			System.out.println("query: " + e);
-			e.printStackTrace();
 		}
 	}
 	
@@ -70,7 +59,7 @@ public abstract class IRCBotSQL
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	private void initDatabaseConnection() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException
+	private void initDatabaseConnection() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, Exception
 	{
 		try
 		{
@@ -92,7 +81,11 @@ public abstract class IRCBotSQL
 		catch (SQLException e)
 		{
 			throw e;
-		} 
+		}
+		catch (Exception e)
+		{
+			throw e;
+		}
 	}
 	
 	/**
