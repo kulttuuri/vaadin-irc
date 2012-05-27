@@ -13,26 +13,26 @@ public class IRCHelper
 	 * Splits commands to list with given delimiter.
 	 * @param row {@link JavadocLibrary#row}
 	 * @param delimiter Delimiter used for the split.
-	 * @return Returns the split list.
+	 * @return Returns the split list. If no elements were added, still returns empty ArrayList.
 	 */
 	public static ArrayList<String> splitCommandsToList(String row, String delimiter)
 	{
+		ArrayList<String> returnCommands = new ArrayList<String>();
+		if (row == null || row.trim().equals("")) return returnCommands;
 		try
 		{
-			ArrayList<String> returnCommands = new ArrayList<String>();
 			String[] split = row.split(delimiter);
 			for (String command : split)
 			{
 				returnCommands.add(command);
 			}
-			return returnCommands;
 		}
 		catch (Exception e)
 		{
 			System.out.println("Error splitting commands to list: " + e);
 			e.printStackTrace();
-			return null;
 		}
+		return returnCommands;
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class IRCHelper
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			//e.printStackTrace();
 			return "";
 		}
 	}

@@ -75,7 +75,8 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("asdasd2");
 		users.add("user");
 		ircInterface.userListChanged("#testikannu12345", users);
-		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #testikannu12345 :!defchange kulttuuri2 http://www.lukkari.com2");
+		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #testikannu12345 :" +
+				"!definfo kulttuuri");
 	}
 	
 	/**
