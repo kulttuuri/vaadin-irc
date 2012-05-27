@@ -116,7 +116,7 @@ public class IRCHelper
 	/**
 	 * Gets channel from standard irc message.
 	 * @param row {@link JavadocLibrary#row}
-	 * @return Returns the standard channel, or null if could not be fetched.
+	 * @return Returns the standard channel, or "" if could not be fetched.
 	 */
 	public static String getChannelFromStdMessage(String row)
 	{
@@ -127,7 +127,7 @@ public class IRCHelper
 		}
 		catch (IndexOutOfBoundsException e)
 		{
-			return null;
+			return "";
 		}
 	}
 	
