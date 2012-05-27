@@ -35,10 +35,28 @@ public class IRCBot extends IRCBotCommands
 	}
 	
 	/**
+	 * When user joins channel.
+	 * @param IRC irc.
+	 * @param ircgui IRC interface.
+	 * @param row {@link {@link irc.JavadocLibrary#row}
+	 */
+	public void joinedChannel(IRC irc, IRCInterface ircgui, String row)
+	{
+		if (!enabled) return;
+		
+		String channel = IRCHelper.getChannelFromStdMessage(row);
+		String nickname = IRCHelper.getNicknameFromStdMessage(row);
+		
+		String joinMessage = getJoinMessage(nickname, channel);
+		if (!joinMessage.equals("")) ircgui.sendMessageToChannel(channel, joinMessage);
+	}
+	
+	/**
 	 * When channel receives a message, this gets called.<br>
 	 * Returns if bot is disabled.<br>
 	 * Checks if message if command and executes functionality for it if it was an command.
 	 * @param IRC irc.
+	 * @aram ircgui IRC interface.
 	 * @param row {@link {@link irc.JavadocLibrary#row}
 	 */
 	public void receivedChannelMessage(IRC irc, IRCInterface ircgui, String row) throws Exception
@@ -124,6 +142,38 @@ public class IRCBot extends IRCBotCommands
 					ircgui.sendMessageToChannel(channel, "Syntax: defchange word content");
 				else
 					ircgui.sendMessageToChannel(channel, changeDefine(parameters.get(0), contentAfterCommand, channel, nickname));
+			}
+			// Joinget
+			else if (message.startsWith(botCallSign + "joinget"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, "Syntax: joinmessage nickname");
+				else
+					ircgui.sendMessageToChannel(channel, getDefine(parameters.get(0), channel));
+			}
+			// Joinadd
+			else if (message.startsWith(botCallSign + "joinadd"))
+			{
+				if (parameters.size() < 2)
+					ircgui.sendMessageToChannel(channel, "Syntax: joinadd nickname message");
+				else
+					ircgui.sendMessageToChannel(channel, addJoinMessage(parameters.get(0), contentAfterCommand, channel));
+			}
+			// Joinrem
+			else if (message.startsWith(botCallSign + "joinrem"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, "Syntax: joinrem nickname");
+				else
+					ircgui.sendMessageToChannel(channel, removeJoinMessage(parameters.get(0), channel));
+			}
+			// Joinchange
+			else if (message.startsWith(botCallSign + "joinchange"))
+			{
+				if (parameters.size() < 2)
+					ircgui.sendMessageToChannel(channel, "Syntax: joinchange nickname message");
+				else
+					ircgui.sendMessageToChannel(channel, changeJoinMessage(parameters.get(0), contentAfterCommand, channel));
 			}
 			// Unknown command
 			else
