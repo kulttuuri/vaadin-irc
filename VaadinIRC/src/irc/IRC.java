@@ -51,16 +51,23 @@ public class IRC
     	this.session = session;
     	this.ircbot = new IRCBot(settings.IRCBOT_ENABLED, settings.IRCBOT_DATABASE_ADDRESS,
     		settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD,
-    		settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN);
+    		settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN, settings.VERSION);
     }
 
     /**
      * Sends new channel message to irc bot.
      * @param row {@link irc.JavadocLibrary#row}
      */
-    public void sendMessageToBot(String row)
+    public void sendChannelMessageToBot(String row)
     {
-    	ircbot.receivedChannelMessage(this, GUIInterface, row);
+    	try
+    	{
+    		ircbot.receivedChannelMessage(this, GUIInterface, row);
+    	}
+    	catch (Exception e)
+    	{
+    		System.out.println("Error handling bot command: " + e);
+    	}
     }
     
     /**

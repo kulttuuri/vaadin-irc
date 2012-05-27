@@ -69,7 +69,7 @@ public class HandleExtraMessages extends MsgHandler
         		if (!getNicknameFromStdMessage(row).equals(session.getNickname()))
         		{
         			irc.receivedNewMessage(getNicknameFromStdMessage(row), getContentFromStdMessage(row), getChannelFromStdMessage(row));
-        			ircApp.sendMessageToBot(row);
+        			ircApp.sendChannelMessageToBot(row);
         		}
         	}
         	// Private message
