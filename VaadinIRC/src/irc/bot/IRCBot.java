@@ -13,25 +13,10 @@ import java.util.ArrayList;
  */
 public class IRCBot extends IRCBotCommands
 {
-	/**
-	 * Constructor to initialize the IRCBot.
-	 */
+	
 	public IRCBot(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName, String botCallSign, String version)
 	{
 		super(enabled, address, username, password, databaseDriver, databaseName, botCallSign, version);
-	}
-	
-	/**
-	 * Removes unwanted characters from message and returns 
-	 * the new parsed messages.
-	 * @param message Message to be parsed.
-	 * @return Parsed message.
-	 */
-	private String removeExtraCharacters(String message)
-	{
-		// TODO: Toimiiko / ja laita tähän kaikki mitä mysql kantaan ei saisi mennä, esim. hipsutkin, vai laitetaanko vaan real escape string?
-		message = message.replace("/;", "");
-		return message;
 	}
 	
 	/**
@@ -66,11 +51,14 @@ public class IRCBot extends IRCBotCommands
 		String channel = IRCHelper.getChannelFromStdMessage(row);
 		String nickname = IRCHelper.getNicknameFromStdMessage(row);
 		String message = IRCHelper.getStdReason(row);
-		message = removeExtraCharacters(message);
 		
-		if (!message.startsWith(botCallSign) && !message.equals(""))
+		if (!message.startsWith(botCallSign) && !message.trim().equals("") || message.trim().equals("!"))
 		{
+			// Add message to database
 			addMessageToDatabase(channel, nickname, message);
+			// Check if message contains matchable words.
+			String checkWord = getWord(nickname, channel, message);
+			if (!checkWord.equals("")) ircgui.sendMessageToChannel(channel, checkWord);
 		}
 		else
 		{
@@ -85,8 +73,21 @@ public class IRCBot extends IRCBotCommands
 			{
 				ircgui.sendMessageToChannel(channel, getBotInfo());
 			}
+			// Help
+			else if (message.startsWith(botCallSign + "help"))
+			{
+				sendCommandsToChannel(irc, channel);
+			}
+			// Commandhelp
+			else if (message.startsWith(botCallSign + "commandhelp"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, "Syntax: commandhelp command");
+				else
+					ircgui.sendMessageToChannel(channel, getCommandHelp(parameters.get(0)));
+			}
 			// Randomnick
-			if (message.startsWith(botCallSign + "randomnick"))
+			else if (message.startsWith(botCallSign + "randomnick"))
 			{
 				if (parameters.size() < 1)
 					ircgui.sendMessageToChannel(channel, "Syntax: randomnick nickname ?#channel");
@@ -163,7 +164,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "joinget"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: joinmessage nickname");
+					ircgui.sendMessageToChannel(channel, "Syntax: joinget joinmessage nickname");
 				else
 					ircgui.sendMessageToChannel(channel, getDefine(parameters.get(0), channel));
 			}
@@ -190,6 +191,38 @@ public class IRCBot extends IRCBotCommands
 					ircgui.sendMessageToChannel(channel, "Syntax: joinchange nickname message");
 				else
 					ircgui.sendMessageToChannel(channel, changeJoinMessage(parameters.get(0), contentAfterCommand, channel));
+			}
+			// Wordget
+			else if (message.startsWith(botCallSign + "wordget"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, getCommandHelp("wordget"));
+				else
+					ircgui.sendMessageToChannel(channel, getWord(nickname, channel, parameters.get(0)));
+			}
+			// Wordadd
+			else if (message.startsWith(botCallSign + "wordadd"))
+			{
+				if (parameters.size() < 2)
+					ircgui.sendMessageToChannel(channel, getCommandHelp("wordadd"));
+				else
+					ircgui.sendMessageToChannel(channel, addWord(nickname, parameters.get(0), contentAfterCommand, channel));
+			}
+			// Wordrem
+			else if (message.startsWith(botCallSign + "wordrem"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, getCommandHelp("wordrem"));
+				else
+					ircgui.sendMessageToChannel(channel, removeWord(parameters.get(0), channel));
+			}
+			// Wordchange
+			else if (message.startsWith(botCallSign + "wordchange"))
+			{
+				if (parameters.size() < 2)
+					ircgui.sendMessageToChannel(channel, getCommandHelp("wordchange"));
+				else
+					ircgui.sendMessageToChannel(channel, changeWord(parameters.get(0), contentAfterCommand, channel));
 			}
 			// Unknown command
 			else

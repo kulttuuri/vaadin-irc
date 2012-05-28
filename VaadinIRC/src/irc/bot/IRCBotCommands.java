@@ -1,9 +1,13 @@
 package irc.bot;
 
 import irc.IRCHelper;
+import irc.exceptions.NoConnectionInitializedException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Contains all the IRC bot command functions.<br>
@@ -12,6 +16,29 @@ import java.util.ArrayList;
  */
 public class IRCBotCommands extends IRCBotSQL
 {
+	/** List of commands that the bot supports. */
+	private static HashMap<String, String> commands = new HashMap<String, String>();
+	static
+	{
+		commands.put("defadd", "Adds new define, Parameters: word content");
+		commands.put("defrem", "Removes define, Parameters: word");
+		commands.put("define", "Gets define for given word, Parameters: word ?#channel");
+		commands.put("definfo", "Gets information about given define, Parameters: word ?#channel");
+		commands.put("defchange", "Changes existing define, Parameters: word content");
+		commands.put("joinget", "Gets join message that has been added to user, Parameters: nickname");
+		commands.put("joinadd", "Adds join message for given user, Parameters: nickname message");
+		commands.put("joinrem", "Removes join message from given user, Parameters: nickname");
+		commands.put("joinchange", "Changes join message on given existing user, Parameters: nickname message");
+		commands.put("wordget", "Gets word for which the bot responds to, Parameters: word");
+		commands.put("wordadd", "Adds message for which the bot responds to, Parameters: word content");
+		commands.put("wordrem", "Removes message which the bot responds to, Parameters: word");
+		commands.put("wordchange", "Changes message for which the bot responds to, Parameters: word content");
+		commands.put("userstats", "Gets stats for given user, Parameters: nickname ?#channel");
+		commands.put("top10", "Gets top10 chatters for a channel, Parameters: ?#channel");
+		commands.put("chanstats", "Gets stats for a channel, Parameters: ?#channel");
+		commands.put("commandhelp", "Shows description for given command, Parameters: command");
+	}
+	
 	/** Sign that is used to call bot commands. For example: !define or .define */
 	protected String botCallSign;
 	/** Version */
@@ -44,25 +71,25 @@ public class IRCBotCommands extends IRCBotSQL
 		{
 			ArrayList<String> split = IRCHelper.splitCommandsToList(message, " ");
 			if (split.size() == 0) { System.out.println("empty!"); return; }
-			ResultSet chan = executeQuery("SELECT * FROM chanstats WHERE channel = '" + channel + "'");
-			ResultSet nick = executeQuery("SELECT * FROM nickstats WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'");
+			ResultSet chan = executePreparedQuery("SELECT * FROM chanstats WHERE channel = ?", new String[] { channel });
+			ResultSet nick = executePreparedQuery("SELECT * FROM nickstats WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'", new String[] { });
 			while (chan.next()) chanStats = chan.getInt("words");
 			while (nick.next()) nickStats = nick.getInt("words");
 
 			if (nickStats == -1)
 			{
 				nickStats = 0;
-				executeUpdate("INSERT INTO nickStats (nickname, channel) VALUES ('"+nickname+"', '"+channel+"')");
+				executePreparedUpdate("INSERT INTO nickStats (nickname, channel) VALUES (?, ?)", new String[] { nickname, channel });
 			}
 			if (chanStats == -1)
 			{
 				chanStats = 0;
-				executeUpdate("INSERT INTO chanStats (channel) VALUES ('"+channel+"')");
+				executePreparedUpdate("INSERT INTO chanStats (channel) VALUES (?)", new String[] { channel });
 			}
 			
-			executeUpdate("UPDATE chanStats SET words = words + " + split.size() + " WHERE channel = '" + channel + "'");
-			executeUpdate("UPDATE nickStats SET words = words + " + split.size() + " WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'");
-			executeUpdate("INSERT INTO chanmessages (channel, nickname, content) VALUES ('"+channel+"', '"+nickname+"', '"+message+"')");
+			executePreparedUpdate("UPDATE chanStats SET words = words + " + split.size() + " WHERE channel = ?", new String[] { channel });
+			executePreparedUpdate("UPDATE nickStats SET words = words + " + split.size() + " WHERE nickname = ? AND channel = ?", new String[] { nickname, channel });
+			executePreparedUpdate("INSERT INTO chanmessages (channel, nickname, content) VALUES (?, ?, ?)", new String[] { channel, nickname, message });
 		}
 		catch (SQLException e)
 		{
@@ -72,16 +99,54 @@ public class IRCBotCommands extends IRCBotSQL
 	}
 	
 	/**
-	 * Returns the list of commands.
-	 * @return List of commands as an string.
+	 * Prints list of commands to the given channel.
+	 * @param IRC irc.
+	 * @param channel Name of the channel.
 	 */
-	protected String getCommands()
+	protected void sendCommandsToChannel(irc.IRC irc, String channel)
 	{
-		return "Commands (parameters with ? are optional, remember to add "+botCallSign+"): " +
-				"defadd define content, defrem define, definfo define, defchange define content," +
+		String returnMsg = "";
+		try
+		{
+			returnMsg = "";
+			irc.sendMessageToChannel(channel, "List of all commands (parameters with ? are optional): ");
+			int i = 0;
+			for (Entry<String, String> entry : commands.entrySet())
+			{
+				i++;
+				returnMsg += entry.getKey() + " " + entry.getValue().split(", Parameters: ")[1] + " | ";
+				if (i == 10)
+				{
+					i = 0;
+					irc.sendMessageToChannel(channel, returnMsg);
+					returnMsg = "";
+				}
+			}
+			irc.sendMessageToChannel(channel, returnMsg);
+		}
+		catch (NoConnectionInitializedException e)
+		{
+			e.printStackTrace();
+		}
+		
+		/*return "Commands (parameters with ? are optional, remember to add "+botCallSign+"): " +
+				", defrem define, definfo define, defchange define content," +
 				"randomsentence nickname ?word, searchlogs word, searchDefines word, " +
 				"addjoinmsg nickname message, removejoinmsg nickname, top10, userstats nickname, chanstats #channel, " +
-				"botinfo";
+				"botinfo";*/
+	}
+	
+	/**
+	 * Gets help & syntax for given command.
+	 * @param command Name of the command. Can contain the bot call sign.
+	 * @return Returns the success message for the operation.
+	 */
+	public String getCommandHelp(String command)
+	{
+		if (command.startsWith(botCallSign)) command = command.substring(1, command.length());
+		
+		if (!commands.containsKey(command)) return "Command " + botCallSign + command + " does not exist.";
+		else return command + ": " + commands.get(command);
 	}
 	
 	/**
@@ -95,9 +160,9 @@ public class IRCBotCommands extends IRCBotSQL
 		String returnMsg = "";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT * FROM chanstats WHERE channel = '" + channel + "'") < 1)
+			if (getAmountOfRowsForQuery("SELECT * FROM chanstats WHERE channel = ?", new String[] { channel }) < 1)
 				return NO_CHANNEL_FOUND;
-			ResultSet result = executeQuery("SELECT words, added FROM chanstats WHERE channel = '" + channel + "'");
+			ResultSet result = executePreparedQuery("SELECT words, added FROM chanstats WHERE channel = ?", new String[] { channel });
 			while (result.next()) returnMsg = "There have been typed total of " + result.getInt("words") + " words in channel " + channel + " since " + result.getTimestamp("added");
 		}
 		catch (SQLException e)
@@ -120,9 +185,9 @@ public class IRCBotCommands extends IRCBotSQL
 		String returnMsg = "";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT * FROM nickstats WHERE channel = '" + channel + "' AND nickname = '" + nickname + "'") < 1)
+			if (getAmountOfRowsForQuery("SELECT * FROM nickstats WHERE channel = ? AND nickname = ?", new String[] { channel, nickname }) < 1)
 				return NO_NICK_FOUND;
-			ResultSet result = executeQuery("SELECT words, added FROM nickstats WHERE channel = '" + channel + "' AND nickname = '" + nickname + "'");
+			ResultSet result = executePreparedQuery("SELECT words, added FROM nickstats WHERE channel = ? AND nickname = ?", new String[] { channel, nickname });
 			while (result.next()) returnMsg = nickname + " has typed total of " + result.getInt("words") + " words since " + result.getString("added") + " in channel " + channel + ".";
 		}
 		catch (SQLException e)
@@ -148,10 +213,10 @@ public class IRCBotCommands extends IRCBotSQL
 		String returnMessage = "";
 		try
 		{
-			int resultAmount = getAmountOfRowsForQuery("SELECT content FROM chanmessages WHERE channel = '"+channel+"' AND content LIKE '%"+search+"%'");
+			int resultAmount = getAmountOfRowsForQuery("SELECT content FROM chanmessages WHERE channel = ? AND content LIKE '%?%'", new String[] { channel,  });
 			if (resultAmount < 1) return SEARCH_NOT_FOUND;
 			if (resultAmount > 1) return "Found multiple results for search " + search + " ("+resultAmount+" results). To get result at index, type: "+botCallSign+"searchrow index|random " + search;
-			ResultSet result = executeQuery("SELECT content FROM chanmessages WHERE channel = '"+channel+"' AND content LIKE '%"+search+"%");
+			ResultSet result = executePreparedQuery("SELECT content FROM chanmessages WHERE channel = ? AND content LIKE '%?%", new String[] { channel, search });
 			while (result.next()) returnMessage = "Result for " +  search + ": " + result.getString("added") + " <" + result.getString("nickname") + "> " + result.getString("content");
 		}
 		catch (SQLException e)
@@ -174,9 +239,9 @@ public class IRCBotCommands extends IRCBotSQL
 		String returnMsg = "";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT * FROM nickstats WHERE channel = '" + channel + "'") < 1)
+			if (getAmountOfRowsForQuery("SELECT * FROM nickstats WHERE channel = ?", new String[] { channel }) < 1)
 				return NO_STATS_FOUND;
-			ResultSet result = executeQuery("SELECT nickname, words FROM nickstats WHERE channel = '" + channel + "' ORDER BY words DESC LIMIT 10");
+			ResultSet result = executePreparedQuery("SELECT nickname, words FROM nickstats WHERE channel = ? ORDER BY words DESC LIMIT 10", new String[] { channel });
 			returnMsg = "Top 10 chatters for channel " + channel + ": ";
 			for (int i = 1; result.next(); i++)
 				returnMsg += i + ". " + result.getString("nickname") + " (" + result.getInt("words") + "), ";
@@ -202,7 +267,7 @@ public class IRCBotCommands extends IRCBotSQL
 		String returnString = "";
 		try
 		{
-			ResultSet results = executeQuery("SELECT content, sent FROM chanmessages WHERE nickname = '"+nickname+"' AND channel = '"+channel+"' ORDER BY RAND() LIMIT 1");
+			ResultSet results = executePreparedQuery("SELECT content, sent FROM chanmessages WHERE nickname = ? AND channel = ? ORDER BY RAND() LIMIT 1", new String[] { nickname, channel });
 			while (results.next()) returnString = results.getString("sent") + " " + nickname + ": " + results.getString("content");
 			if (returnString == null || returnString.equals("")) return USER_NOT_FOUND;
 		}
@@ -225,7 +290,7 @@ public class IRCBotCommands extends IRCBotSQL
 		String returnString = "";
 		try
 		{
-			ResultSet results = executeQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'");
+			ResultSet results = executePreparedQuery("SELECT message FROM joinmessages WHERE nickname = ? AND channel = ?", new String[] { nickname, channel });
 			while (results.next()) returnString = results.getString("message");
 		}
 		catch (Exception e)
@@ -249,10 +314,10 @@ public class IRCBotCommands extends IRCBotSQL
 		String DOES_NOT_EXIST = "Join message for user " + nickname + " does not exist.";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'") == 0)
+			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = ? AND channel = ?", new String[] { nickname, channel }) == 0)
 				return DOES_NOT_EXIST;
 			
-			int results = executeUpdate("UPDATE joinmessages SET message = '" + message + "' WHERE nickname = '" + nickname + "' AND channel = '" + channel + "'");
+			int results = executePreparedUpdate("UPDATE joinmessages SET message = ? WHERE nickname = ? AND channel = ?", new String[] { message, nickname, channel });
 			if (results == 0) throw new SQLException();
 		}
 		catch (SQLException e)
@@ -277,10 +342,10 @@ public class IRCBotCommands extends IRCBotSQL
 		String ALREADY_EXISTS = "Join message for user " + nickname + " already exists. Use changejoinmsg to modify existing messages.";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = '" + nickname + "'") > 0)
+			if (getAmountOfRowsForQuery("SELECT message FROM joinmessages WHERE nickname = ?", new String[] { nickname }) > 0)
 				return ALREADY_EXISTS;
 			
-			int results = executeUpdate("INSERT INTO joinmessages (nickname, message, channel) VALUES ('"+nickname+"','"+message+"','"+channel+"')");
+			int results = executePreparedUpdate("INSERT INTO joinmessages (nickname, message, channel) VALUES (?, ?, ?)", new String[] { nickname, message, channel });
 			if (results == 0) throw new SQLException();
 		}
 		catch (SQLException e)
@@ -304,7 +369,7 @@ public class IRCBotCommands extends IRCBotSQL
 		String REMOVED = "Removed join message for user " + nickname + ".";
 		try
 		{
-			int results = executeUpdate("DELETE FROM joinmessages WHERE nickname = '" + nickname + "'");
+			int results = executePreparedUpdate("DELETE FROM joinmessages WHERE nickname = ?", new String[] { nickname });
 			if (results == 0) throw new SQLException();
 		}
 		catch (SQLException e)
@@ -338,10 +403,10 @@ public class IRCBotCommands extends IRCBotSQL
 		String DEFINE_ALREADY_EXISTS = "Define " + define + " already exists. Use defchange to modify existing defines.";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT content FROM defines WHERE define = '" + define + "'") > 0)
+			if (getAmountOfRowsForQuery("SELECT content FROM defines WHERE define = ?", new String[] { define }) > 0)
 				return DEFINE_ALREADY_EXISTS;
 			
-			int results = executeUpdate("INSERT INTO defines (nickname, define, content, channel) VALUES ('"+nickname+"','"+define+"','"+content+"','"+channel+"')");
+			int results = executePreparedUpdate("INSERT INTO defines (nickname, define, content, channel) VALUES (?, ?, ?, ?)", new String[] { nickname, define, content, channel });
 			if (results == 0) throw new SQLException();
 		}
 		catch (SQLException e)
@@ -365,7 +430,7 @@ public class IRCBotCommands extends IRCBotSQL
 		String REMOVED_DEFINE = "Removed define " + define + ".";
 		try
 		{
-			int results = executeUpdate("DELETE FROM defines WHERE define = '" + define + "'");
+			int results = executePreparedUpdate("DELETE FROM defines WHERE define = ?", new String[] { define });
 			if (results == 0) throw new SQLException();
 		}
 		catch (SQLException e)
@@ -389,10 +454,10 @@ public class IRCBotCommands extends IRCBotSQL
 		String NO_DEFINE_EXISTS = "Define " + define + " does not exist.";
 		try
 		{
-			if (getAmountOfRowsForQuery("SELECT content FROM defines WHERE define = '" + define + "'") == 0)
+			if (getAmountOfRowsForQuery("SELECT content FROM defines WHERE define = ?", new String[] { define }) == 0)
 				return NO_DEFINE_EXISTS;
 			
-			int results = executeUpdate("UPDATE defines SET nickname = '"+nickname+"', define = '"+define+"', content = '"+content+"', channel = '"+channel+"' WHERE define = '" + define + "'");
+			int results = executePreparedUpdate("UPDATE defines SET nickname = ?, define = ?, content = ?, channel = ? WHERE define = ?", new String[] { nickname, define, content, channel, define });
 			if (results == 0) throw new SQLException();
 		}
 		catch (SQLException e)
@@ -415,7 +480,7 @@ public class IRCBotCommands extends IRCBotSQL
 		String NO_DEFINE_EXISTS = "Define " + define + " does not exist in channel " + channel + ".";
 		try
 		{
-			ResultSet results = executeQuery("SELECT * FROM defines WHERE define = '" + define + "' AND channel = '" + channel + "'");
+			ResultSet results = executePreparedQuery("SELECT * FROM defines WHERE define = ? AND channel = ?", new String[] { define, channel });
 			while (results.next())
 				returnString = "Define " + define + " was created on " + results.getString("created") + " by " + results.getString("nickname") + ".";
 			if (returnString == null || returnString.equals("")) returnString = NO_DEFINE_EXISTS;
@@ -440,7 +505,7 @@ public class IRCBotCommands extends IRCBotSQL
 		String NO_DEFINE_EXISTS = "Define " + define + " does not exist in channel " + channel;
 		try
 		{
-			ResultSet results = executeQuery("SELECT content FROM defines WHERE define = '" + define + "' AND channel = '" + channel + "'");
+			ResultSet results = executePreparedQuery("SELECT content FROM defines WHERE define = ? AND channel = ?", new String[] { define, channel });
 			while (results.next()) returnString = define + ": " + results.getString("content");
 			if (returnString == null || returnString.equals("")) returnString = NO_DEFINE_EXISTS;
 		}
@@ -450,5 +515,127 @@ public class IRCBotCommands extends IRCBotSQL
 			return NO_DEFINE_EXISTS;
 		}
 		return returnString;
+	}
+	
+	/**
+	 * Tries to get word definition.
+	 * @param Nickname caller nickname.
+	 * @param channel Name of the channel.
+	 * @param message Whole message that user sent.
+	 * @return Returns the content for the word if it is found. Otherwise "".
+	 */
+	protected String getWord(String nickname, String channel, String message)
+	{
+		message = message.toLowerCase();
+		String returnString = "";
+		try
+		{
+			ResultSet results = executePreparedQuery("SELECT message, word FROM words WHERE channel = ?", new String[] { channel });
+			while (results.next())
+			{
+				String msg = results.getString("word");
+				if (message.contains(msg.toLowerCase())) return parseVariables(results.getString("message"), nickname);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return "";
+		}
+		return returnString;
+	}
+	
+	/**
+	 * Changes the content for given word.
+	 * @param word Word that you would want to change.
+	 * @param message New content for the word.
+	 * @param channel Name of the channel.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String changeWord(String word, String message, String channel)
+	{
+		if (word.length() <= 3 || word.length() >= 10)
+			return "Word length can only be 3-10 characters long.";
+		
+		String CHANGED = "Changed word's " + word + " content to " + message + ".";
+		String DOES_NOT_EXIST = "Word " + word + " does not exist.";
+		try
+		{
+			if (getAmountOfRowsForQuery("SELECT message FROM words WHERE channel = ? AND word = ?", new String[] { channel, word }) == 0)
+				return DOES_NOT_EXIST;
+
+			int results = executePreparedUpdate("UPDATE words SET message = ? WHERE word = ? AND channel = ?", new String[] { message, word, channel });
+			if (results == 0) throw new SQLException();
+		}
+		catch (SQLException e)
+		{
+			System.out.println(e.toString());
+			e.printStackTrace();
+			return DOES_NOT_EXIST;
+		}
+		return CHANGED;
+	}
+	
+	/**
+	 * Adds new word with content.
+	 * @param nickname Sender nickname.
+	 * @param word Matching word.
+	 * @param message Message to be added that matches channel messages.
+	 * @param channel Channel.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String addWord(String nickname, String word, String message, String channel)
+	{
+		if (word.length() < 4 || word.length() > 10)
+			return "Word length can only be 4-10 characters long.";
+		
+		String ADDED = "Added word " + word + " with content " + message + ".";
+		String ALREADY_EXISTS = "Word " + word + " already exists. Use changeword to modify existing words.";
+		try
+		{
+			if (getAmountOfRowsForQuery("SELECT message FROM words WHERE CHANNEL = ? AND word = ?", new String[] { channel, word }) > 0)
+				return ALREADY_EXISTS;
+			
+			int results = executePreparedUpdate("INSERT INTO words (word, nickname, message, channel) VALUES (?, ?, ?, ?)", new String[] { word, nickname, message, channel });
+			if (results == 0) throw new SQLException();
+		}
+		catch (SQLException e)
+		{
+			System.out.println(e.toString());
+			e.printStackTrace();
+			return ALREADY_EXISTS;
+		}
+		return ADDED;
+	}
+	
+	/**
+	 * Removes given word message.
+	 * @param channel Channel name.
+	 * @return Returns the success message for the operation.
+	 */
+	protected String removeWord(String word, String channel)
+	{
+		String DOES_NOT_EXIST = "Word " + word + " does not exist.";
+		String REMOVED = "Removed word " + word + ".";
+		try
+		{
+			int results = executePreparedUpdate("DELETE FROM words WHERE word = ? AND channel = ?", new String[] { word, channel });
+			if (results == 0) throw new SQLException();
+		}
+		catch (SQLException e)
+		{
+			return DOES_NOT_EXIST;
+		}
+		return REMOVED;
+	}
+	
+	/**
+	 * Goes through the message and replaces certain variables with new content.
+	 * @return Returns the parsed message.
+	 */
+	private String parseVariables(String message, String nickname)
+	{
+		message = message.replace("%nickname%", nickname);
+		return message;
 	}
 }

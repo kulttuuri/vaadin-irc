@@ -76,7 +76,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("user");
 		ircInterface.userListChanged("#testikannu12345", users);
 		ircInterface.debugSendMessage(":oma!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #tiko-jns");
-		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :!randomnick kulttuuri");
+		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :!");
 	}
 	
 	/**
@@ -248,7 +248,8 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	 */
 	public void createPrivateConversation(String nickname)
 	{
-		nickname = nickname.toLowerCase();
+		nickname = nickname.toLowerCase().trim();
+		if (channelMap.containsKey(nickname)) return;
 		
 		// Add channel to list of channel maps and create new Tab to TabSheet out of it & select the newly created tab.
 		channelMap.put(nickname, new channelGUI(nickname, this, ircInterface));
@@ -267,7 +268,9 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	 */
 	public void createChannel(String channelName)
 	{
+		channelName = channelName.trim();
 		if (!channelName.startsWith("#") && !channelName.equals("status")) channelName = "#" + channelName;
+		if (channelMap.containsKey(channelName)) return;
 
 		// Add channel to list of channel maps and create new Tab to TabSheet out of it & select the newly created tab.
 		channelMap.put(channelName, new channelGUI(channelName, this, ircInterface));
@@ -318,7 +321,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 
 	/**
 	 * When tab is selected, that tab icon is set back to default.
-	 * @param event Not used.
+	 * @param event This parameter is not used.
 	 */
 	public void selectedTabChange(SelectedTabChangeEvent event)
 	{
@@ -329,7 +332,13 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	public void onTabClose(TabSheet tabsheet, Component tabContent)
 	{
 		String name = tabContent.getCaption();
-		if (name.startsWith("#")) ircInterface.sendMessageToServer("/PART " + name);
-		ircInterface.leftChannel(name, session.getServer());
+		if (name.startsWith("#"))
+		{
+			ircInterface.sendMessageToServer("/PART " + name);
+			ircInterface.leftChannel(name, session.getServer());
+			ircInterface.pushChangesToClient();
+		}
+		else
+			removeChannel(name);
 	}
 }

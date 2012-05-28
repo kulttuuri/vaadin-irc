@@ -142,12 +142,6 @@ public class HandleExtraMessages extends MsgHandler
         	irc.quitNetwork(session.getServer(), reason);
         	throw new TerminateConnectionException(reason);
         }
-		// AUTO-AWAY (DEBUG: did read line: :port80a.se.quakenet.org 301 joumatamou Kulttuuri :Auto-away)
-        else if (checkCommand("301"))
-        {
-        	irc.receivedNewPrivateMessage(rowSpaces.get(3), getStdReason(row));
-        }
-		// If command was not handled, return false.
 		else
 		{
 			return false;

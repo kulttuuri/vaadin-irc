@@ -67,6 +67,7 @@ public class IRC
     	catch (Exception e)
     	{
     		System.out.println("Error handling bot command: " + e);
+    		e.printStackTrace();
     	}
     }
     
@@ -83,6 +84,7 @@ public class IRC
     	catch (Exception e)
     	{
     		System.out.println("Error handling bot command: " + e);
+    		e.printStackTrace();
     	}
     }
     
