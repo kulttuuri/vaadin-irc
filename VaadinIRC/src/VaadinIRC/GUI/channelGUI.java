@@ -85,6 +85,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	/**
 	 * Removes tags from a given string and returns the parsed string.<br>
 	 * Example tags: <b>, </b>, <p>, <br/> ...
+	 * // TODO: TOO GREEDY. Make only check for HTML tags.
 	 * @param string Target String.
 	 * @return Returns the String where all the tags have been parsed.
 	 */
@@ -144,7 +145,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 		
 		Label label = new Label(newMessage);
 			label.setContentMode(Label.CONTENT_RAW);
-			label.setWidth(550, Sizeable.UNITS_PIXELS);
+			label.setWidth(100, Sizeable.UNITS_PERCENTAGE);
 		panelMessages.addComponent(label);
 		
 		// Scroll messages panel to bottom message
@@ -301,8 +302,6 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	            	if (isMsgTextfieldFocused) sendMessage(textfieldMessagefield.getValue().toString());
 	            }
 	        });
-			
-	        // Right click menu for nicknames table
 			tableNicknames.addListener((ItemClickListener)this);
 	        tableNicknames.addActionHandler((Action.Handler)this);
 	        textfieldMessagefield.addListener((FocusListener)this);
@@ -349,7 +348,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 				horizontal.addComponent(panelMessages);
 				mainVerticalLayout.addComponent(horizontal);
 				mainVerticalLayout.setExpandRatio(horizontal, 0.90f);
-				if (!channelName.equals("status"))
+				if (channelName.startsWith("#"))
 				{
 					horizontal.addComponent(tableNicknames);
 					horizontal.setExpandRatio(panelMessages, 0.8f);
@@ -436,7 +435,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	 */
 	private void refreshNicknameList()
 	{
-		sendMessage("/NAMES " + channelName);
+		if (channelName.startsWith("#")) sendMessage("/NAMES " + channelName);
 	}
 	
 	/**
@@ -497,22 +496,6 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
         }
 		ircInterface.pushChangesToClient();
 		return false;
-	}
-	
-	/**
-	 * Returns the given user level in the channel (op, voiced, normal user).
-	 * @param nickname Nickname of the user you want to get level for.
-	 * @return Returns the user level. @ is op, + is voiced and otherwise if normal user or was not found, will return "".
-	 */
-	@Deprecated
-	private String getUserLevel(String nickname)
-	{
-        for (Object id : tableNicknames.getItemIds())
-        {
-            String row = (String)tableNicknames.getContainerProperty(id, "Nicknames").getValue();
-            if (row.equals(nickname)) return (String)tableNicknames.getContainerProperty(id, "Rights").getValue();
-        }
-        return "";
 	}
 
 	/**

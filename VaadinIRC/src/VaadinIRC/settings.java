@@ -10,7 +10,7 @@ public class settings
 	// DEBUG
 	
 	/** Is debug mode enabled? Set to false on production environment. */
-	public static final boolean debug = true;
+	public static final boolean debug = false;
 	
 	// APPLICATION INFORMATION
 	

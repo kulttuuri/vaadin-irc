@@ -79,8 +79,21 @@ public class HandleErrorMessages extends MsgHandler
     public boolean handleLine(String ircRow, IRC ircApp)
     {
 		this.row = ircRow;
+		String command = IRCHelper.getStdCommand(row);
 		
-		if (errorReplies.containsKey(IRCHelper.getStdCommand(row)))
+		// You're not channel operator
+		if (command.equals("482"))
+		{
+			irc.receivedNewMessage(IRCHelper.splitCommandsToList(row, " ").get(2), IRCHelper.getStdReason(row), IRCHelper.splitCommandsToList(row, " ").get(3));
+			return true;
+		}
+		// No text to send
+		else if (command.equals("412"))
+		{
+			irc.receivedNewMessage(IRCHelper.splitCommandsToList(row, " ").get(2), IRCHelper.getStdReason(row), IRCHelper.splitCommandsToList(row, " ").get(3));
+			return true;
+		}
+		else if (errorReplies.containsKey(command))
 		{
 			irc.receivedErrorMessage(row, IRCHelper.getStdCommand(row), IRCHelper.getContentFromStdMessage(row));
 			return true;

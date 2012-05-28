@@ -83,27 +83,17 @@ public class VaIRCInterface implements IRCInterface
 			else if (rowSpaces.get(0).equalsIgnoreCase("QUERY"))
 			{
 				String target = "";
-				String reason = "";
-				try { reason = rowSpaces.get(2); } catch (Exception e) { }
-				try { target = rowSpaces.get(1); } catch (Exception e) { }
-				sendMessageToUser(target.toLowerCase(), reason);
+				try { target = rowSpaces.get(1); } catch (Exception e) { return true; }
+				vairc.createPrivateConversation(target.toLowerCase().trim());
 				return true;
 			}
-			/*
-			else if (rowSpaces.get(0).equalsIgnoreCase("PRIVMSG"))
-			{
-				String target = "";
-				String reason = "";
-				try { reason = rowSpaces.get(2); } catch (Exception e) { }
-				try { target = rowSpaces.get(1); } catch (Exception e) { }
-				if (target.startsWith("#")) return false; // Skip channel messages
-				sendMessageToUser(target.toLowerCase(), reason);
-				return true;
-			}*/
 			else if (rowSpaces.get(0).equalsIgnoreCase("WC"))
 			{
 				if (!vairc.getSelectedChannelName().startsWith("#"))
+				{
 					vairc.removeChannel(vairc.getSelectedChannelName());
+					vairc.pushChangesToClient();
+				}
 				return true;
 			}
 			else if (rowSpaces.get(0).equalsIgnoreCase("OP"))

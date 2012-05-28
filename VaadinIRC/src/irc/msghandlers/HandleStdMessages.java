@@ -62,6 +62,17 @@ public class HandleStdMessages extends MsgHandler
         {
         	irc.setChannelTopic(rowSpaces.get(3), IRCHelper.splitMessageAfterRow(row, ":", 2), IRCHelper.getNicknameFromStdMessage(row), false);
         }
+		// AUTO-AWAY (DEBUG: did read line: :port80a.se.quakenet.org 301 joumatamou Kulttuuri :Auto-away)
+        else if (checkCommand("301"))
+        {
+        	irc.receivedNewPrivateMessage(rowSpaces.get(3), IRCHelper.getStdReason(row));
+        }
+		// WHOIS commands
+        else if (checkCommand("311") || checkCommand("319") || checkCommand("312") || checkCommand("330") || checkCommand("330"))
+        {
+        	irc.receivedNewPrivateMessage(rowSpaces.get(3), IRCHelper.getStdReason(row));
+        }
+		// If command was not handled, return false.
         else
         {
         	return false;
