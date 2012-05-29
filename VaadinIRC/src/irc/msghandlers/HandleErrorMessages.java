@@ -2,15 +2,13 @@ package irc.msghandlers;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import irc.IRC;
-import irc.IRCEnums;
 import irc.IRCHelper;
 import irc.IRCInterface;
 
 /**
  * Handles IRC error replies (range 400-599)
- * @author Kulttuuri
+ * @author Aleksi Postari
  *
  */
 public class HandleErrorMessages extends MsgHandler
@@ -69,6 +67,10 @@ public class HandleErrorMessages extends MsgHandler
 		errorReplies.put("502", "ERR_USERSDONTMATCH");
 	}
 	
+	/**
+	 * Constructor to initialize the class.
+	 * @param irc IRCInterface.
+	 */
 	public HandleErrorMessages(IRCInterface irc)
 	{
 		super(irc);

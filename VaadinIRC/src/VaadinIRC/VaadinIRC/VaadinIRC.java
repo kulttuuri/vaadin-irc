@@ -51,6 +51,11 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	/** Addon component for Vaadin that allows to force push changes from server to client. */
 	private ICEPush pusher;
 	
+	/**
+	 * Constructor to start the VaadinIRC application.
+	 * @param window Reference to main application window.
+	 * @param application Reference to Application.
+	 */
 	public VaadinIRC(Window window, Application application)
 	{
 		// Call super implementation (VaadinIrcGUI) to create the irc view and to store reference to main application window
@@ -76,7 +81,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("user");
 		ircInterface.userListChanged("#testikannu12345", users);
 		ircInterface.debugSendMessage(":oma!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #tiko-jns");
-		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :!");
+		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :!readrss slashdot");
 	}
 	
 	/**
@@ -94,6 +99,9 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		}
 	}
 	
+	/**
+	 * Sets connecting message to topbar text.
+	 */
 	public void setTopbarTextStatusConnecting()
 	{
 		topLabel.setValue("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_go.png'/> Connecting to network...</div>");

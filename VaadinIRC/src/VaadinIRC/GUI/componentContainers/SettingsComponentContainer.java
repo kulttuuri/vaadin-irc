@@ -28,6 +28,10 @@ public abstract class SettingsComponentContainer extends AbstractComponentContai
 	/** Change nickname button */
 	protected Button buttonChangeNick;
 	
+	/**
+	 * Constructor to create the class.
+	 * @param mainWindow Main application window.
+	 */
 	public SettingsComponentContainer(Window mainWindow)
 	{
 		super(mainWindow, true);

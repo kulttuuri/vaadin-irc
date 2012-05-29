@@ -2,12 +2,16 @@ package irc.msghandlers;
 
 import java.util.HashMap;
 import irc.IRC;
-import irc.IRCEnums;
 import irc.IRCHelper;
 import irc.IRCInterface;
 import irc.exceptions.InvalidNicknameException;
 import irc.exceptions.NicknameAlreadyInUseException;
 
+/**
+ * This class handles the messages that are needed when connection to IRC server.
+ * @author Aleksi Postari
+ *
+ */
 public class HandleConnectMessages extends MsgHandler
 {
 	/** Contains map of all connect replies. */
@@ -32,6 +36,10 @@ public class HandleConnectMessages extends MsgHandler
 		connectReplies.put("376", "");
 	}
 	
+	/**
+	 * Constructor to initialize the class.
+	 * @param irc IRCInterface.
+	 */
 	public HandleConnectMessages(IRCInterface irc)
 	{
 		super(irc);
@@ -43,6 +51,8 @@ public class HandleConnectMessages extends MsgHandler
 	 * @param ircRow {@link irc.JavadocLibrary#row}
 	 * @param ircApp The actual IRC application.
 	 * @return Returns true if connection to server was created (004), otherwise false.
+	 * @throws InvalidNicknameException When nickname contains invalid characters.
+	 * @throws NicknameAlreadyInUseException When nickname is already in use.
 	 */
 	public boolean handleConnectLines(String ircRow, IRC ircApp) throws InvalidNicknameException, NicknameAlreadyInUseException
 	{
@@ -60,7 +70,7 @@ public class HandleConnectMessages extends MsgHandler
     		ircApp.handlePingResponse(row);
     	}
     	// Additional PONG response
-    	if (row.indexOf(IRCEnums.CONNECT_ADDITIONAL_PING_RESPONSE) >= 0)
+    	if (row.indexOf("513") >= 0)
     	{
     		try
     		{
@@ -69,17 +79,17 @@ public class HandleConnectMessages extends MsgHandler
     		} catch (Exception e) { }
     	}
         // If row was 004, we have succesfully connected to server.
-    	else if (row.indexOf(IRCEnums.CONNECT_ONNECTION_SUCCESFUL) >= 0)
+    	else if (row.indexOf("004") >= 0)
         {
             return true;
         }
         // Invalid nickname
-        else if(row.indexOf(IRCEnums.CONNECT_INVALID_NICKNAME) >= 0)
+        else if(row.indexOf("432") >= 0)
         {
             throw new InvalidNicknameException();
         }
         // Nickname already in use
-        else if (row.indexOf(IRCEnums.CONNECT_NICKNAME_IN_USE) >= 0)
+        else if (row.indexOf("433") >= 0)
         {
             throw new NicknameAlreadyInUseException();
         }
@@ -88,7 +98,7 @@ public class HandleConnectMessages extends MsgHandler
 	}
 	
 	/**
-	 * Use {@link #handleConnectLines(String)} instead.
+	 * @deprecated Use {@link #handleConnectLines(String, IRC)} instead in class HandleConnectMessages.
 	 */
 	@Override
 	public boolean handleLine(String ircRow, IRC ircApp)

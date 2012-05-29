@@ -3,10 +3,14 @@ package irc.msghandlers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import irc.IRC;
-import irc.IRCEnums;
 import irc.IRCHelper;
 import irc.IRCInterface;
 
+/**
+ * Class to handle standard IRC messages (lines 300-400).
+ * @author Aleksi Postari
+ *
+ */
 public class HandleStdMessages extends MsgHandler
 {
 	/** Contains map of all standard messages. */
@@ -22,6 +26,10 @@ public class HandleStdMessages extends MsgHandler
 		standardMessages.put("353", "RPL_NAMREPLY");
 	}
 	
+	/**
+	 * Constructor to initialize the class.
+	 * @param irc IRCInterface.
+	 */
 	public HandleStdMessages(IRCInterface irc)
 	{
 		super(irc);

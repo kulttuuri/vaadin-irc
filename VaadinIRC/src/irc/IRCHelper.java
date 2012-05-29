@@ -167,17 +167,4 @@ public class IRCHelper
 			return null;
 		}
 	}
-	
-	/**
-	 * Generates formatted IRC message from the given nickname and message and returns it.
-	 * @param nick Nickname.
-	 * @param row {@link JavadocLibrary#row}
-	 * @return Returns the generated channel message as an string.
-	 * @deprecated Because html tags are being removed from all messages.
-	 */
-	@Deprecated
-	public static String generateIRCMessage(String nick, String row)
-	{
-		return "<b>" + nick + "</b> " + row;
-	}
 }

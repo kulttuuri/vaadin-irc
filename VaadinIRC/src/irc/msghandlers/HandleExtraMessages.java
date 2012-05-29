@@ -25,6 +25,11 @@ public class HandleExtraMessages extends MsgHandler
 	/** IRC Session information. */
 	private IRCSession session;
 	
+	/**
+	 * Constructor to initialize the class.
+	 * @param irc IRCInterface.
+	 * @param session IRCSession information.
+	 */
 	public HandleExtraMessages(IRCInterface irc, IRCSession session)
 	{
 		super(irc);

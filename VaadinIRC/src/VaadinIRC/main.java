@@ -1,13 +1,11 @@
 package VaadinIRC;
 
-import irc.IRCSession;
 import VaadinIRC.VaadinIRC.VaadinIRC;
 import com.vaadin.Application;
 import com.vaadin.ui.*;
 
 /*
  * TODO: Status channelin viestit liian lyhyitä (Word wrappaa perus channelin tavoin), ei oo 100% width viestit.
- * TODO: !wordadd komennot (kanavalle jos tulee viesti, niin tarkistaa containsilla oliko wordeissa)
  * TODO: Automaagisesti luomaan tietokannat ja puuttuvat taulut jne.
  * TODO: Turn off serialization: http://dev-answers.blogspot.com/2007/03/how-to-turn-off-tomcat-session.html
  * TODO: External configurations file tai sitten passaa komentoriviltä parametrit.
@@ -15,6 +13,11 @@ import com.vaadin.ui.*;
  * IRC Numerics: http://www.mirc.net/raws/#top
  * Threadeihin timeout checkkaus (jos yli 300s viime timeoutista, niin tapa threadit)
  * Tarkista clientiltä onko vielä connectannut tietyin väliajoin.
+ * TODO: Tarkistamaan että käyttäjä on OP kun koittaa suorittaa komentoa.
+ * TODO: Uusia ominaisuuksia:
+ * 		- RSS readeri uutisille, automaaginen, voidaan enabloida / disabloida laittamalla !enablerss tai !disablerss
+ * 		- !randomsentence ?#channel hakemaan random lause kanavalta.
+ * 		- !randomlink ?#channel hakemaan random linkki kanavalta.
  */
 
 /**
