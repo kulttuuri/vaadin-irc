@@ -5,6 +5,10 @@ import com.vaadin.Application;
 import com.vaadin.ui.*;
 
 /*
+ * TODO: Timestampit asetukseen että näyttääkö chat viestien kanssa.
+ * TODO: handlaamaan irkin boldaus ja nää formatoinnit.
+ * TODO: Skandit.
+ * TODO: Mode oppauksia ja muita VOI olla enemmän kuin 3. Nyt ei tajua kuin 3.
  * TODO: Status channelin viestit liian lyhyitä (Word wrappaa perus channelin tavoin), ei oo 100% width viestit.
  * TODO: Automaagisesti luomaan tietokannat ja puuttuvat taulut jne.
  * TODO: Turn off serialization: http://dev-answers.blogspot.com/2007/03/how-to-turn-off-tomcat-session.html
@@ -18,6 +22,9 @@ import com.vaadin.ui.*;
  * 		- RSS readeri uutisille, automaaginen, voidaan enabloida / disabloida laittamalla !enablerss tai !disablerss
  * 		- !randomsentence ?#channel hakemaan random lause kanavalta.
  * 		- !randomlink ?#channel hakemaan random linkki kanavalta.
+ * 		- votet kuntoon.
+ * 		- message nickname viesti (vastaanottaja saa viestin kun connectaa tai kirjoittaa jotain kanavalle)
+ * 		- definesearch (etsii defineistä)
  */
 
 /**
