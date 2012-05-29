@@ -32,6 +32,15 @@ public abstract class IRCBotSQL
 	/** Contains the database connection. */
 	private Connection connection;
 	
+	/**
+	 * Constructor to create the IRCBotSQL object and to initialize the SQL connection.
+	 * @param enabled Is the bot enabled?
+	 * @param address SQL server address.
+	 * @param username SQL server username.
+	 * @param password SQL server password.
+	 * @param databaseDriver Java Database Driver.
+	 * @param databaseName SQL database name.
+	 */
 	public IRCBotSQL(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName)
 	{
 		this.enabled = enabled;

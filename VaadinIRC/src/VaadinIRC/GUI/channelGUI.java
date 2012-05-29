@@ -58,12 +58,23 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	/** Reference to VaadinIRC */
 	VaadinIRC vaIRC;
 	
+	/** User table right click option whois. */
 	private static final Action ACTION_WHOIS = new Action("Whois");
+	/** User table right click option private chat. */
 	private static final Action ACTION_PRIVMSG = new Action("Private chat");
+	/** User table right click option op. */
 	private static final Action ACTION_OP = new Action("Op");
+	/** User table right click option voice. */
 	private static final Action ACTION_VOICE = new Action("Voice");
+	/** All user table right click actions. */
     private static final Action[] ACTIONS_NICKNAMES = new Action[] { ACTION_WHOIS, ACTION_PRIVMSG, ACTION_OP, ACTION_VOICE };
 	
+    /**
+     * Constructor to create new Channel GUI object.
+     * @param channelName Name of the channel.
+     * @param vaIRC Reference to VaadinIRC.
+     * @param ircInterface Reference to ircInterface.
+     */
 	public channelGUI(String channelName, VaadinIRC vaIRC, VaIRCInterface ircInterface)
 	{
 		super(null);

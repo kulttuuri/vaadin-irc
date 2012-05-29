@@ -12,6 +12,11 @@ import irc.msghandlers.HandleErrorMessages;
 import irc.msghandlers.HandleExtraMessages;
 import irc.msghandlers.HandleStdMessages;
 
+/**
+ * Thread to handle all incoming IRC messages.
+ * @author Aleksi Postari
+ *
+ */
 public class ThreadIRCReader extends Thread
 {
     /** Reference to IRC class. */

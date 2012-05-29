@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Contains all the IRC bot command functions.<br>
+ * Contains all the IRCbot command functions.
  * @author Aleksi Postari
  *
  */
@@ -37,6 +37,8 @@ public class IRCBotCommands extends IRCBotSQL
 		commands.put("top10", "Gets top10 chatters for a channel, Parameters: ?#channel");
 		commands.put("chanstats", "Gets stats for a channel, Parameters: ?#channel");
 		commands.put("commandhelp", "Shows description for given command, Parameters: command");
+		commands.put("lastseen", "Shows when the user has last time sent message to the channel, Parameters: nickname ?#channel");
+		commands.put("randomnick", "Gets random sentence for given nickname, Parameters: nickname");
 	}
 	
 	/** Sign that is used to call bot commands. For example: !define or .define */
@@ -44,6 +46,17 @@ public class IRCBotCommands extends IRCBotSQL
 	/** Version */
 	private String version;
 	
+	/**
+	 * Constructor to pass the information to super method {@link irc.bot.IRCBotSQL}.
+	 * @param enabled Is the bot enabled?
+	 * @param address SQL server address.
+	 * @param username SQL server username.
+	 * @param password SQL server password.
+	 * @param databaseDriver Java Database Driver.
+	 * @param databaseName SQL database name.
+	 * @param botCallSign What sign is used to call bot commands.
+	 * @param version Bot version.
+	 */
 	public IRCBotCommands(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName, String botCallSign, String version)
 	{
 		super(enabled, address, username, password, databaseDriver, databaseName);
@@ -51,6 +64,10 @@ public class IRCBotCommands extends IRCBotSQL
 		this.version = version;
 	}
 
+	/**
+	 * Returns information about the bot.
+	 * @return Bot information.
+	 */
 	protected String getBotInfo()
 	{
 		return "Vaadin Irkkia by Aleksi Postari. Version: " + version;
@@ -134,6 +151,47 @@ public class IRCBotCommands extends IRCBotSQL
 				"randomsentence nickname ?word, searchlogs word, searchDefines word, " +
 				"addjoinmsg nickname message, removejoinmsg nickname, top10, userstats nickname, chanstats #channel, " +
 				"botinfo";*/
+	}
+	
+	/**
+	 * Returns information when the user has last been seen in a channel 
+	 * (when user has last time sent message on a channel).
+	 * @param nickname Nickname
+	 * @param channel Channel
+	 * @return Returns the success message for the operation.
+	 */
+	public String getLastSeen(String nickname, String channel)
+	{
+		String NO_NICK_FOUND = "Sorry! I do not have any records for user " + nickname + " in channel " + channel + ".";
+		String returnMsg = "";
+		try
+		{
+			if (getAmountOfRowsForQuery("SELECT sent FROM chanmessages WHERE channel = ? AND nickname = ? ORDER BY sent DESC LIMIT 1", new String[] { channel, nickname }) < 1)
+				return NO_NICK_FOUND;
+			ResultSet result = executePreparedQuery("SELECT sent FROM chanmessages WHERE channel = ? AND nickname = ? ORDER BY sent DESC LIMIT 1", new String[] { channel, nickname });
+			while (result.next())
+			{
+				// Get distance between current and sent time
+				java.sql.Timestamp timestamp = result.getTimestamp("sent");
+				java.util.Date date = timestamp;
+				java.util.Date currentDate = new java.util.Date();
+				
+				long secs = (currentDate.getTime() - date.getTime()) / 1000;
+				int hours = (int) (secs / 3600);
+				secs = secs % 3600;
+				int mins = (int) (secs / 60);
+				secs = secs % 60;
+				System.out.println("hours: " + hours + " mins: " + mins);
+				System.out.println("last msg added: " + timestamp);
+				returnMsg = nickname + " has last time sent message " + hours + " hours and " + mins + " minutes ago in channel " + channel + ".";
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return NO_NICK_FOUND;
+		}
+		return returnMsg;
 	}
 	
 	/**
@@ -472,6 +530,7 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Returns information about define.
 	 * @param define Name of the define.
+	 * @param channel IRC channel name.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getDefineInfo(String define, String channel)
@@ -495,8 +554,8 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Gets given define from database.
-	 * @param nickname Caller.
 	 * @param define Name of the define.
+	 * @param channel IRC channel name.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getDefine(String define, String channel)

@@ -6,14 +6,24 @@ import irc.IRCInterface;
 import java.util.ArrayList;
 
 /**
- * Main class for IRC Bot, which can be used to save data to database, query data from database etc.<br>
- * call bot commands (like define, defadd, top10) etc.
+ * Main class for IRCbot, which can be used to save data to database, query data from database etc.<br>
+ * Calls bot commands (like define, defadd, top10) etc.
  * @author Aleksi Postari
  *
  */
 public class IRCBot extends IRCBotCommands
 {
-	
+	/**
+	 * Constructor to start the IRCBot.
+	 * @param enabled Is the bot enabled?
+	 * @param address SQL server address.
+	 * @param username SQL server username.
+	 * @param password SQL server password.
+	 * @param databaseDriver Java Database Driver.
+	 * @param databaseName SQL database name.
+	 * @param botCallSign What sign is used to call bot commands.
+	 * @param version Bot version.
+	 */
 	public IRCBot(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName, String botCallSign, String version)
 	{
 		super(enabled, address, username, password, databaseDriver, databaseName, botCallSign, version);
@@ -82,15 +92,23 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "commandhelp"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: commandhelp command");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("commandhelp"));
 				else
 					ircgui.sendMessageToChannel(channel, getCommandHelp(parameters.get(0)));
+			}
+			// Lastseen
+			else if (message.startsWith(botCallSign + "lastseen"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, getCommandHelp("lastseen"));
+				else
+					ircgui.sendMessageToChannel(channel, getLastSeen(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
 			}
 			// Randomnick
 			else if (message.startsWith(botCallSign + "randomnick"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: randomnick nickname ?#channel");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("randomnick"));
 				else
 					ircgui.sendMessageToChannel(channel, getRandomSentenceFromUser(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
 			}
@@ -116,7 +134,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "userstats"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: userstats nickname ?#channel");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("userstats"));
 				else
 					ircgui.sendMessageToChannel(channel, getNickStats(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
 			}
@@ -124,7 +142,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "define"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: define word ?#channel");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("define"));
 				else
 					ircgui.sendMessageToChannel(channel, getDefine(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
 			}
@@ -132,7 +150,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "defadd"))
 			{
 				if (parameters.size() < 2)
-					ircgui.sendMessageToChannel(channel, "Syntax: defadd definename content");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("defadd"));
 				else
 					ircgui.sendMessageToChannel(channel, addDefine(nickname, parameters.get(0), contentAfterCommand, channel));
 			}
@@ -140,7 +158,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "defrem"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: defrem word");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("defrem"));
 				else
 					ircgui.sendMessageToChannel(channel, removeDefine(nickname, parameters.get(0)));
 			}
@@ -148,7 +166,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "definfo"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: definfo word ?#channel");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("definfo"));
 				else
 					ircgui.sendMessageToChannel(channel, getDefineInfo(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
 			}
@@ -156,7 +174,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "defchange"))
 			{
 				if (parameters.size() < 2)
-					ircgui.sendMessageToChannel(channel, "Syntax: defchange word content");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("defchange"));
 				else
 					ircgui.sendMessageToChannel(channel, changeDefine(parameters.get(0), contentAfterCommand, channel, nickname));
 			}
@@ -164,7 +182,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "joinget"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: joinget joinmessage nickname");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("joinget"));
 				else
 					ircgui.sendMessageToChannel(channel, getDefine(parameters.get(0), channel));
 			}
@@ -172,7 +190,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "joinadd"))
 			{
 				if (parameters.size() < 2)
-					ircgui.sendMessageToChannel(channel, "Syntax: joinadd nickname message");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("joinadd"));
 				else
 					ircgui.sendMessageToChannel(channel, addJoinMessage(parameters.get(0), contentAfterCommand, channel));
 			}
@@ -180,7 +198,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "joinrem"))
 			{
 				if (parameters.size() < 1)
-					ircgui.sendMessageToChannel(channel, "Syntax: joinrem nickname");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("joinrem"));
 				else
 					ircgui.sendMessageToChannel(channel, removeJoinMessage(parameters.get(0), channel));
 			}
@@ -188,7 +206,7 @@ public class IRCBot extends IRCBotCommands
 			else if (message.startsWith(botCallSign + "joinchange"))
 			{
 				if (parameters.size() < 2)
-					ircgui.sendMessageToChannel(channel, "Syntax: joinchange nickname message");
+					ircgui.sendMessageToChannel(channel, getCommandHelp("joinchange"));
 				else
 					ircgui.sendMessageToChannel(channel, changeJoinMessage(parameters.get(0), contentAfterCommand, channel));
 			}

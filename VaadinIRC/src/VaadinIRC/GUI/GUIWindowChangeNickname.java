@@ -29,6 +29,7 @@ public class GUIWindowChangeNickname extends SettingsComponentContainer
 	 * Constructor to initialize new window "Change Nickname".
 	 * @param mainWindow Main application window.
 	 * @param session IRCSession information.
+	 * @param irc Reference to IRCInterface.
 	 */
 	public GUIWindowChangeNickname(Window mainWindow, IRCSession session, IRCInterface irc)
 	{

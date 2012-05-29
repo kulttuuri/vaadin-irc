@@ -1,15 +1,6 @@
 package VaadinIRC.VaadinIRC;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.vaadin.artur.icepush.ICEPush;
-
-import com.vaadin.ui.Window;
-
-import VaadinIRC.main;
 import VaadinIRC.settings;
 import VaadinIRC.exceptions.ChannelNotFoundException;
 import irc.IRC;
@@ -25,7 +16,9 @@ import irc.exceptions.*;
  */
 public class VaIRCInterface implements IRCInterface
 {
+	/** Reference to VaadinIRC. */
 	private VaadinIRC vairc;
+	/** Reference to IRC. */
 	private IRC irc;
 	
 	/**

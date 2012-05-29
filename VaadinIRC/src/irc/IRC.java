@@ -9,7 +9,7 @@ import VaadinIRC.settings;
 /**
  * Base class for initialing a IRC connection.
  * Also handles the reading & writing to / from socket connection to IRC network.
- * @author Kulttuuri
+ * @author Aleksi Postari
  *
  */
 public class IRC

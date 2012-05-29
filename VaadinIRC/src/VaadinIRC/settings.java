@@ -17,7 +17,7 @@ public class settings
 	/** Name of the application. */
 	public static final String APP_NAME = "VaadinIRC";
 	/** Version. */
-	public static final String VERSION = "0.2";
+	public static final String VERSION = "0.8";
 	
 	// APPLICATION SETTINGS
 	
@@ -45,5 +45,5 @@ public class settings
 	/** Database username's password. */
 	public static final String IRCBOT_DATABASE_PASSWORD = "";
 	/** First sign that is used to call bot commands. Defaults to ! */
-	public static final String IRCBOT_BOT_CALL_SIGN = "!";
+	public static final String IRCBOT_BOT_CALL_SIGN = "?";
 }

@@ -7,8 +7,12 @@ package irc.exceptions;
  */
 public class TerminateConnectionException extends Exception
 {
+	/** Why was the connection terminated? */
 	private String reason;
 	
+	/**
+	 * Constructor to initialize the exception.
+	 */
 	public TerminateConnectionException(String reason)
 	{
 		super();

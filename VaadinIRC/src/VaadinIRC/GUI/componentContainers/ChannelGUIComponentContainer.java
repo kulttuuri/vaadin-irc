@@ -37,6 +37,10 @@ public class ChannelGUIComponentContainer extends AbstractComponentContainer
 	/** is the message textfield focused? */
 	protected boolean isMsgTextfieldFocused = false;
 	
+	/**
+	 * Constructor to create the class.
+	 * @param mainWindow Main application window.
+	 */
 	public ChannelGUIComponentContainer(Window mainWindow)
 	{
 		super(mainWindow, false);
