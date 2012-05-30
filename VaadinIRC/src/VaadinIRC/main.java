@@ -5,12 +5,13 @@ import com.vaadin.Application;
 import com.vaadin.ui.*;
 
 /*
+ * TODO: close() is missing from JDBC calls (it is automatically now closed after certain times, not best practice though)
+ * TODO: definelle, addgroupille ja vastaavalle p‰‰luokka mik‰ yliajetaan ja toimii suoraan niiss‰ se toiminnallisuudet ja tulee komentoihin automaagisesti.
  * TODO: Timestampit asetukseen ett‰ n‰ytt‰‰kˆ chat viestien kanssa.
  * TODO: handlaamaan irkin boldaus ja n‰‰ formatoinnit.
  * TODO: Skandit.
  * TODO: Mode oppauksia ja muita VOI olla enemm‰n kuin 3. Nyt ei tajua kuin 3.
  * TODO: Status channelin viestit liian lyhyit‰ (Word wrappaa perus channelin tavoin), ei oo 100% width viestit.
- * TODO: Automaagisesti luomaan tietokannat ja puuttuvat taulut jne.
  * TODO: Turn off serialization: http://dev-answers.blogspot.com/2007/03/how-to-turn-off-tomcat-session.html
  * TODO: External configurations file tai sitten passaa komentorivilt‰ parametrit.
  * TODO: Settingsist‰ pituus ja korkeus (ja prossina vai pikselein‰)
