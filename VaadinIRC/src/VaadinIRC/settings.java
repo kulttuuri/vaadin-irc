@@ -17,7 +17,7 @@ public class settings
 	/** Name of the application. */
 	public static final String APP_NAME = "VaadinIRC";
 	/** Version. */
-	public static final String VERSION = "0.8";
+	public static final String VERSION = "0.82";
 	
 	// APPLICATION SETTINGS
 	
@@ -38,12 +38,12 @@ public class settings
 	public static final String IRCBOT_DATABASE_DRIVER = "com.mysql.jdbc.Driver";
 	/** Database address. Defaults to jdbc:mysql://localhost:3306/ */
 	public static final String IRCBOT_DATABASE_ADDRESS = "jdbc:mysql://localhost:3306/";
-	/** Database name. Defaults to Vaadin_Irkkia */
+	/** Database name. Defaults to vaadinirkkia */
 	public static final String IRCBOT_DATABASE_NAME = "vaadinirkkia";
 	/** Database username. User should have INSERT, DELETE, SELECT privileges by minimum. */
 	public static final String IRCBOT_DATABASE_USERNAME = "root";
 	/** Database username's password. */
 	public static final String IRCBOT_DATABASE_PASSWORD = "";
 	/** First sign that is used to call bot commands. Defaults to ! */
-	public static final String IRCBOT_BOT_CALL_SIGN = "?";
+	public static final String IRCBOT_BOT_CALL_SIGN = "!";
 }
