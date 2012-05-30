@@ -13,10 +13,12 @@
 package irc.bot;
 
 import irc.IRCHelper;
+import irc.bot.plugins.PluginVoting;
 import irc.exceptions.NoConnectionInitializedException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,12 +53,20 @@ public class IRCBotCommands extends IRCBotSQL
 		commands.put("commandhelp", "Shows description for given command, Parameters: command");
 		commands.put("lastseen", "Shows when the user has last time sent message to the channel, Parameters: nickname ?#channel");
 		commands.put("randomnick", "Gets random sentence for given nickname, Parameters: nickname");
+		commands.put("votestart", "Starts new voting session, Parameters: title");
+		commands.put("votestop", "Stops current voting session, Parameters: -");
+		commands.put("voteyes", "Votes yes for the current voting session, Parameters: ?reason");
+		commands.put("voteno", "Votes no for the current voting session, Parameters: ?reason");
+		commands.put("voteinfo", "Gets information about the current voting session, Parameters: -");
 	}
 	
 	/** Sign that is used to call bot commands. For example: !define or .define */
 	protected String botCallSign;
 	/** Version */
 	private String version;
+	
+	/** Voting plugin for the channels. */
+	private HashMap<String, PluginVoting> channelVotingPlugins = new HashMap<String, PluginVoting>();
 	
 	/**
 	 * Constructor to pass the information to super method {@link irc.bot.IRCBotSQL}.
@@ -75,7 +85,7 @@ public class IRCBotCommands extends IRCBotSQL
 		this.botCallSign = botCallSign;
 		this.version = version;
 	}
-
+	
 	/**
 	 * Returns information about the bot.
 	 * @return Bot information.
@@ -83,6 +93,20 @@ public class IRCBotCommands extends IRCBotSQL
 	protected String getBotInfo()
 	{
 		return "Vaadin Irkkia by Aleksi Postari. Version: " + version;
+	}
+	
+	/**
+	 * Returns the voting plugin for a channel.<br>
+	 * If plugin does not exist, it will be created.
+	 * @param channelName Name of the channel.
+	 * @return Returns the VotingPlugin for the given channel.
+	 */
+	protected PluginVoting getVotingPlugin(String channelName)
+	{
+		if (!channelVotingPlugins.containsKey(channelName))
+			channelVotingPlugins.put(channelName, new PluginVoting(botCallSign));
+		
+		return channelVotingPlugins.get(channelName);
 	}
 	
 	/**
@@ -185,17 +209,9 @@ public class IRCBotCommands extends IRCBotSQL
 			{
 				// Get distance between current and sent time
 				java.sql.Timestamp timestamp = result.getTimestamp("sent");
-				java.util.Date date = timestamp;
-				java.util.Date currentDate = new java.util.Date();
+				int[] dateDistance = getDistanceBetweenDates(timestamp, new Date());
 				
-				long secs = (currentDate.getTime() - date.getTime()) / 1000;
-				int hours = (int) (secs / 3600);
-				secs = secs % 3600;
-				int mins = (int) (secs / 60);
-				secs = secs % 60;
-				System.out.println("hours: " + hours + " mins: " + mins);
-				System.out.println("last msg added: " + timestamp);
-				returnMsg = nickname + " has last time sent message " + hours + " hours and " + mins + " minutes ago in channel " + channel + ".";
+				returnMsg = nickname + " has last time sent message " + dateDistance[0] + " hours and " + dateDistance[1] + " minutes ago in channel " + channel + ".";
 			}
 		}
 		catch (SQLException e)
@@ -204,6 +220,23 @@ public class IRCBotCommands extends IRCBotSQL
 			return NO_NICK_FOUND;
 		}
 		return returnMsg;
+	}
+	
+	/**
+	 * Gets the distance between two Date objects.
+	 * @param startDate Starting date.
+	 * @param endDate Ending date.
+	 * @return Returns int[] array containing hours and minutes between the dates.
+	 */
+	public static int[] getDistanceBetweenDates(Date startDate, Date endDate)
+	{
+		long secs = (endDate.getTime() - startDate.getTime()) / 1000;
+		int hours = (int) (secs / 3600);
+		secs = secs % 3600;
+		int mins = (int) (secs / 60);
+		secs = secs % 60;
+		
+		return new int[] { hours, mins };
 	}
 	
 	/**
