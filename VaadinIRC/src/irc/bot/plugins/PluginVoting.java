@@ -12,32 +12,37 @@
 
 package irc.bot.plugins;
 
+import irc.bot.IRCBotCommands;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
  * Contains the functionality for IRCBot voting plugin.
- * NOT CURRENTLY IMPLEMENTED FULLY.
  * @author Aleksi Postari (@kulttuuri)
  *
  */
-@Deprecated
-public class PluginVoting
+public class PluginVoting extends AbstractBotPlugin
 {
-	/** Contains the voters and their responses (true=yes, false=no) */
-	private HashMap<String, Boolean> voters = new HashMap<String, Boolean>();
-	/** Contains the voters and their reasons (if any) */
-	private HashMap<String, String> voteReasons = new HashMap<String, String>();
-	
+	/** Is voting currently running? */
+	private boolean isVotingRunning = false;
+	/** Everyone who has voted yes. nickname, reason (reason can be "") */
+	private HashMap<String, String> yesVoters = new HashMap<String, String>();
+	/** Everyone who has voted no. format. nickname, reason (reason can be "") */
+	private HashMap<String, String> noVoters = new HashMap<String, String>();
 	/** Contains the vote title for the channel. */
 	private String voteTitle;
+	/** Voting starting time. */
+	private Date voteStartTime;
+	/** Voting starting nickname. */
+	private String votingStarterNickname;
 	
 	/**
-	 * Constructor to initialize new voting for a channel.
-	 * @param title Voting title message.
+	 * Constructor to initialize the channel voting plugin.
 	 */
-	public PluginVoting(String title)
+	public PluginVoting(String botCallSign)
 	{
-		this.voteTitle = title;
+		this.botCallSign = botCallSign;
 	}
 	
 	/**
@@ -49,67 +54,143 @@ public class PluginVoting
 	 */
 	public String addUserToVoting(String nickname, boolean response, String reason)
 	{
-		String yesno = response == true ? "yes" : "no";
-		voters.put(nickname, response);
-		if (reason != null && !reason.trim().equals(""))
+		if (!isVotingRunning)
+			return "Voting is not currently running. Use command "+botCallSign+"votestart title to start new voting session.";
+		
+		if (reason == null || reason.trim().equals("")) reason = "";
+		String reasonMsg = "";
+		if (!reason.equals("")) reasonMsg = " (" + reason + ")";
+		
+		if (response)
 		{
-			voteReasons.put(nickname, reason);
-			return nickname + " voted " + yesno + " (" + reason + ").";
+			if (noVoters.containsKey(nickname)) noVoters.remove(nickname);
+			yesVoters.put(nickname, reason);
+			//return nickname + " voted yes" + reasonMsg + ".";
+			return "";
 		}
 		else
-			return nickname + " voted " + yesno + ".";
+		{
+			if (yesVoters.containsKey(nickname)) yesVoters.remove(nickname);
+			noVoters.put(nickname, reason);
+			//return nickname + " voted no" + reasonMsg + ".";
+			return "";
+		}
 	}
 	
 	/**
-	 * Gets list of voters.
-	 * @return Returns list of voters and their responses.
+	 * Gets all voters that have answered yes and possible reason.
+	 * @return All voters that have answered yes.
 	 */
-	public String[] getVoters()
+	private String getYesVoters()
 	{
-		if (voters.size() == 0) return new String[] { "There were no responses for voting '" + voteTitle + "' :(" };
-		
-		// Yes answers
-		/*String msg = "";
-		for (java.util.Map.Entry<String, Boolean> entry : voters.entrySet())
+		String returnMsg = "Yes voters:  ";
+		for (java.util.Map.Entry<String, String> entry : yesVoters.entrySet())
 		{
-			if (voteReasons.containsKey(entry.getKey()))
-				returnMsg += entry.getKey() + "";
-			else
-				
-		}*/
-		// No answers
+			if (entry.getValue().equals("")) returnMsg += entry.getKey() + ", ";
+			else returnMsg += entry.getKey() + " (" + entry.getValue() + "), ";
+		}
 		
-		return new String[] { "-" };
-		//return returnMsg;
+		if (returnMsg.equals("Yes voters:  ")) return "";
+		return returnMsg.substring(0, returnMsg.length()-2);
+	}
+	
+	/**
+	 * Gets all voters that have answered no and possible reason.
+	 * @return All voters that have answered no.
+	 */
+	private String getNoVoters()
+	{
+		String returnMsg = "No voters:  ";
+		for (java.util.Map.Entry<String, String> entry : noVoters.entrySet())
+		{
+			if (entry.getValue().equals("")) returnMsg += entry.getKey() + ", ";
+			else returnMsg += entry.getKey() + " (" + entry.getValue() + "), ";
+		}
+		
+		if (returnMsg.equals("No voters:  ")) return "";
+		return returnMsg.substring(0, returnMsg.length()-2);
 	}
 	
 	/**
 	 * Checks if voting is currently running.
-	 * @return Is voting session running
+	 * @return Is voting session running.
 	 */
-	public boolean isVotingRunning()
+	public String isVotingRunning()
 	{
-		if (voters.size() == 0 && voteReasons.size() == 0 && voteTitle.equals(""))
-			return false;
+		if (isVotingRunning)
+		{
+			return "Voting is currently running.";
+		}
 		else
-			return true;
+		{
+			return "Voting is not running. Use command "+botCallSign+"votestart title to start new voting session.";
+		}
+	}
+	
+	/**
+	 * Starts new voting session.
+	 * @param nickname Voting starter nickname.
+	 * @param title Voting title.
+	 * @return Returns the completion / failure message for the operation.
+	 */
+	public String startVoting(String nickname, String title)
+	{
+		if (isVotingRunning) return "Voting " + voteTitle + " is already running. " + yesVoters.size() + " yes voters and " + noVoters.size() + " no voters.";
+		
+		isVotingRunning = true;
+		voteTitle = title == null ? "" : title;
+		votingStarterNickname = nickname;
+		voteStartTime = new Date();
+		return nickname + " started new voting: " + voteTitle + ". Type "+botCallSign+"voteyes ?reason or "+botCallSign+"voteno ?reason.";
+	}
+	
+	/**
+	 * Returns information about the current voting session.
+	 * @return Returns arraylist containing lines that needs to be announced in the IRC channel.
+	 */
+	public ArrayList<String> getVotingInformation()
+	{
+		ArrayList<String> returnList = new ArrayList<String>();
+		if (!isVotingRunning)
+		{
+			returnList.add("Voting is not currently running. Use command "+botCallSign+"votestart title to start new voting session.");
+			return returnList;
+		}
+		
+		int[] dateDistance = IRCBotCommands.getDistanceBetweenDates(voteStartTime, new Date());
+		
+		returnList.add("Current voting: " + voteTitle + ". Voting was started by " + votingStarterNickname + 
+			" " + dateDistance[0] + " hours " + dateDistance[1] + " minutes ago. " + yesVoters.size() + " yes voters and " + noVoters.size() + " no voters. " +
+			"Type "+botCallSign+"voteyes ?reason or " + botCallSign + "voteno ?reason.");
+		if (!getYesVoters().equals("")) returnList.add(getYesVoters());
+		if (!getNoVoters().equals("")) returnList.add(getNoVoters());
+		return returnList;
 	}
 	
 	/**
 	 * Stops the current voting session.
-	 * @return Returns the completion / failure message for the operation.
+	 * @return Returns arraylist containing lines that needs to be announced in the IRC channel.
 	 */
-	public String[] stopVoting()
+	public ArrayList<String> stopVoting()
 	{
-		if (isVotingRunning())
-			return new String[] { "Voting is currently running. Use command votestop to stop the current voting session." };
-		else
+		ArrayList<String> returnList = new ArrayList<String>();
+		
+		if (!isVotingRunning)
 		{
-			voters.clear();
-			voteReasons.clear();
-			voteTitle = "";
-			//return "Stopped voting " + voteTitle + ". Results: " + getVoters();
-			return new String[] { "not implemented." };
+			returnList.add("Voting is not currently running. Use command '"+botCallSign+"votestart title' to start new voting session.");
+			return returnList;
 		}
+		
+		int[] dateDistance = IRCBotCommands.getDistanceBetweenDates(voteStartTime, new Date());
+		
+		returnList.add("Stopped voting " + voteTitle + ". Voting was started by " + votingStarterNickname + 
+		" " + dateDistance[0] + " hours " + dateDistance[1] + " minutes ago. " + yesVoters.size() + " yes voters and " + noVoters.size() + " no voters.");
+		if (!getYesVoters().equals("")) returnList.add(getYesVoters());
+		if (!getNoVoters().equals("")) returnList.add(getNoVoters());
+		yesVoters.clear();
+		noVoters.clear();
+		voteTitle = "";
+		isVotingRunning = false;
+		return returnList;
 	}
 }

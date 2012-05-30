@@ -84,8 +84,10 @@ public class IRCBot extends IRCBotCommands
 		}
 		else
 		{
-			// Split message after command to list (removes !command from message)
-			String contentAfterCommand = IRCHelper.splitMessageAfterRow(row, " ", 5);
+			// Split message after command to list (removes "!command" from message)
+			String contentAfterCommand = IRCHelper.splitMessageAfterRow(row, " ", 4);
+			// Split message after command par1 to list (removes "!command par1" from message)
+			String contentAfterSecondCommand = IRCHelper.splitMessageAfterRow(row, " ", 5);
 			// Get parameters without command (Does not add !command)
 			ArrayList<String> parameters = IRCHelper.splitCommandsToList(message, " ");
 			if (parameters.size() > 0) parameters.remove(0);
@@ -150,6 +152,38 @@ public class IRCBot extends IRCBotCommands
 				else
 					ircgui.sendMessageToChannel(channel, getNickStats(parameters.get(0), parameters.size() > 1 ? parameters.get(1) : channel));
 			}
+			// Votestart
+			else if (message.startsWith(botCallSign + "votestart"))
+			{
+				if (parameters.size() < 1)
+					ircgui.sendMessageToChannel(channel, getCommandHelp("votestart"));
+				else
+					ircgui.sendMessageToChannel(channel, getVotingPlugin(channel).startVoting(nickname, contentAfterCommand));
+			}
+			// Votestop
+			else if (message.startsWith(botCallSign + "votestop"))
+			{
+				ArrayList<String> msgs = getVotingPlugin(channel).stopVoting();
+				for (String msg : msgs) ircgui.sendMessageToChannel(channel, msg);
+			}
+			// Voteyes
+			else if (message.startsWith(botCallSign + "voteyes"))
+			{
+				String reply = getVotingPlugin(channel).addUserToVoting(nickname, true, parameters.size() < 1 ? "" : contentAfterCommand);
+				if (!reply.equals("")) ircgui.sendMessageToChannel(channel, reply);
+			}
+			// Voteno
+			else if (message.startsWith(botCallSign + "voteno"))
+			{
+				String reply = getVotingPlugin(channel).addUserToVoting(nickname, false, parameters.size() < 1 ? "" : contentAfterCommand);
+				if (!reply.equals("")) ircgui.sendMessageToChannel(channel, reply);
+			}
+			// Voteinfo
+			else if (message.startsWith(botCallSign + "voteinfo"))
+			{
+				ArrayList<String> msgs = getVotingPlugin(channel).getVotingInformation();
+				for (String msg : msgs) ircgui.sendMessageToChannel(channel, msg);
+			}
 			// Define
 			else if (message.startsWith(botCallSign + "define"))
 			{
@@ -164,7 +198,7 @@ public class IRCBot extends IRCBotCommands
 				if (parameters.size() < 2)
 					ircgui.sendMessageToChannel(channel, getCommandHelp("defadd"));
 				else
-					ircgui.sendMessageToChannel(channel, addDefine(nickname, parameters.get(0), contentAfterCommand, channel));
+					ircgui.sendMessageToChannel(channel, addDefine(nickname, parameters.get(0), contentAfterSecondCommand, channel));
 			}
 			// Defrem
 			else if (message.startsWith(botCallSign + "defrem"))
@@ -188,7 +222,7 @@ public class IRCBot extends IRCBotCommands
 				if (parameters.size() < 2)
 					ircgui.sendMessageToChannel(channel, getCommandHelp("defchange"));
 				else
-					ircgui.sendMessageToChannel(channel, changeDefine(parameters.get(0), contentAfterCommand, channel, nickname));
+					ircgui.sendMessageToChannel(channel, changeDefine(parameters.get(0), contentAfterSecondCommand, channel, nickname));
 			}
 			// Joinget
 			else if (message.startsWith(botCallSign + "joinget"))
@@ -204,7 +238,7 @@ public class IRCBot extends IRCBotCommands
 				if (parameters.size() < 2)
 					ircgui.sendMessageToChannel(channel, getCommandHelp("joinadd"));
 				else
-					ircgui.sendMessageToChannel(channel, addJoinMessage(parameters.get(0), contentAfterCommand, channel));
+					ircgui.sendMessageToChannel(channel, addJoinMessage(parameters.get(0), contentAfterSecondCommand, channel));
 			}
 			// Joinrem
 			else if (message.startsWith(botCallSign + "joinrem"))
@@ -220,7 +254,7 @@ public class IRCBot extends IRCBotCommands
 				if (parameters.size() < 2)
 					ircgui.sendMessageToChannel(channel, getCommandHelp("joinchange"));
 				else
-					ircgui.sendMessageToChannel(channel, changeJoinMessage(parameters.get(0), contentAfterCommand, channel));
+					ircgui.sendMessageToChannel(channel, changeJoinMessage(parameters.get(0), contentAfterSecondCommand, channel));
 			}
 			// Wordget
 			else if (message.startsWith(botCallSign + "wordget"))
@@ -236,7 +270,7 @@ public class IRCBot extends IRCBotCommands
 				if (parameters.size() < 2)
 					ircgui.sendMessageToChannel(channel, getCommandHelp("wordadd"));
 				else
-					ircgui.sendMessageToChannel(channel, addWord(nickname, parameters.get(0), contentAfterCommand, channel));
+					ircgui.sendMessageToChannel(channel, addWord(nickname, parameters.get(0), contentAfterSecondCommand, channel));
 			}
 			// Wordrem
 			else if (message.startsWith(botCallSign + "wordrem"))
@@ -252,7 +286,7 @@ public class IRCBot extends IRCBotCommands
 				if (parameters.size() < 2)
 					ircgui.sendMessageToChannel(channel, getCommandHelp("wordchange"));
 				else
-					ircgui.sendMessageToChannel(channel, changeWord(parameters.get(0), contentAfterCommand, channel));
+					ircgui.sendMessageToChannel(channel, changeWord(parameters.get(0), contentAfterSecondCommand, channel));
 			}
 			// Unknown command
 			else
