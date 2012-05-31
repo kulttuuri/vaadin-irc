@@ -1,6 +1,9 @@
 /**
- * Copyright (C) 2012 Aleksi Postari
+ * Copyright (C) 2012 Aleksi Postari (@kulttuuri, aleksi@postari.net)
  * License type: MIT (http://en.wikipedia.org/wiki/MIT_License)
+ * This code is part of project Vaadin Irkkia.
+ * License in short: You can use this code as you wish, but please keep this license information intach or credit the original author in redistributions.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -26,15 +29,15 @@ public class PluginVoting extends AbstractBotPlugin
 {
 	/** Is voting currently running? */
 	private boolean isVotingRunning = false;
-	/** Everyone who has voted yes. nickname, reason (reason can be "") */
+	/** Everyone who has voted yes. {@link irc.JavadocLibrary#ircNickname nickname}, reason (reason can be "") */
 	private HashMap<String, String> yesVoters = new HashMap<String, String>();
-	/** Everyone who has voted no. format. nickname, reason (reason can be "") */
+	/** Everyone who has voted no. format. {@link irc.JavadocLibrary#ircNickname nickname}, reason (reason can be "") */
 	private HashMap<String, String> noVoters = new HashMap<String, String>();
 	/** Contains the vote title for the channel. */
 	private String voteTitle;
 	/** Voting starting time. */
 	private Date voteStartTime;
-	/** Voting starting nickname. */
+	/** Voting starting {@link irc.JavadocLibrary#ircNickname nickname}. */
 	private String votingStarterNickname;
 	
 	/**
@@ -47,7 +50,7 @@ public class PluginVoting extends AbstractBotPlugin
 	
 	/**
 	 * Adds user to voting session.
-	 * @param nickname Nickname.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param response Response.
 	 * @param reason If user passed additional reason message.
 	 * @return Returns the completion / failure message for the operation.
@@ -129,7 +132,7 @@ public class PluginVoting extends AbstractBotPlugin
 	
 	/**
 	 * Starts new voting session.
-	 * @param nickname Voting starter nickname.
+	 * @param nickname Voting starter {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param title Voting title.
 	 * @return Returns the completion / failure message for the operation.
 	 */

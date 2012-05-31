@@ -1,6 +1,9 @@
 /**
- * Copyright (C) 2012 Aleksi Postari
+ * Copyright (C) 2012 Aleksi Postari (@kulttuuri, aleksi@postari.net)
  * License type: MIT (http://en.wikipedia.org/wiki/MIT_License)
+ * This code is part of project Vaadin Irkkia.
+ * License in short: You can use this code as you wish, but please keep this license information intach or credit the original author in redistributions.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -13,6 +16,7 @@
 package VaadinIRC.GUI;
 
 
+import irc.IRCHelper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,43 +110,15 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	}
 	
 	/**
-	 * Removes tags from a given string and returns the parsed string.<br>
-	 * Example tags: <b>, </b>, <p>, <br/> ...
-	 * // TODO: TOO GREEDY. Make only check for HTML tags.
-	 * @param string Target String.
-	 * @return Returns the String where all the tags have been parsed.
-	 */
-	private String removeTags(String string)
-	{
-	    if (string == null || string.length() == 0) return string;
-	    
-	    Pattern REMOVE_TAGS = Pattern.compile("<.+?>");
-	    Matcher m = REMOVE_TAGS.matcher(string);
-	    return m.replaceAll("");
-	}
-	
-	/**
-	 * Converts URLs to html links.<br>
-	 * example: www.google.com => <a href="www.google.com">www.google.com</a>
-	 * @param text Target text.
-	 * @return Returns the text where all urls have been converted into HTML links.
-	 */
-	private String convertURLsToHTMLLinks(String text)
-	{
-	    if (text == null) return text;
-	    
-	    return text.replaceAll("(\\A|\\s)((http|https|ftp|mailto):\\S+)(\\s|\\z)", "$1<a target=\"_blank\" href=\"$2\">$2</a>$4");
-	}
-	
-	/**
 	 * Adds standard channel message to the channel textarea. Repaints the panel and scrolls to bottom.
 	 * @param username Message sender's nickname.
 	 * @param newMessage Message to be sent.
 	 */
 	public void addStandardChannelMessage(String username, String newMessage)
 	{
-		newMessage = removeTags(newMessage);
-		newMessage = convertURLsToHTMLLinks(newMessage);
+		newMessage = IRCHelper.removeTags(newMessage);
+		newMessage = IRCHelper.convertURLsToHTMLLinks(newMessage);
+		newMessage = IRCHelper.formatIRCTextToHTML(newMessage);
 		
 		Label label = new Label("<b>" + username + "</b> " + newMessage);
 			label.setContentMode(Label.CONTENT_RAW);
@@ -163,8 +139,8 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	 */
 	public void addMessageToChannelTextarea(String newMessage)
 	{
-		newMessage = removeTags(newMessage);
-		newMessage = convertURLsToHTMLLinks(newMessage);
+		newMessage = IRCHelper.removeTags(newMessage);
+		newMessage = IRCHelper.convertURLsToHTMLLinks(newMessage);
 		
 		Label label = new Label(newMessage);
 			label.setContentMode(Label.CONTENT_RAW);

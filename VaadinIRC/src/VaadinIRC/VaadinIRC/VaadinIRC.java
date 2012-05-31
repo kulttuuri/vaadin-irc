@@ -1,6 +1,9 @@
 /**
- * Copyright (C) 2012 Aleksi Postari
+ * Copyright (C) 2012 Aleksi Postari (@kulttuuri, aleksi@postari.net)
  * License type: MIT (http://en.wikipedia.org/wiki/MIT_License)
+ * This code is part of project Vaadin Irkkia.
+ * License in short: You can use this code as you wish, but please keep this license information intach or credit the original author in redistributions.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -93,7 +96,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("user");
 		ircInterface.userListChanged("#testikannu12345", users);
 		ircInterface.debugSendMessage(":oma!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #tiko-jns");
-		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :!readrss slashdot");
+		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :testiviesti tämä \u0002boldattu ja väri \u000315 sitten \u001f\u0016 nyt \u000fnormaali!");
 	}
 	
 	/**

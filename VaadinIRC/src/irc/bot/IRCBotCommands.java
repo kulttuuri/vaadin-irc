@@ -1,6 +1,9 @@
 /**
- * Copyright (C) 2012 Aleksi Postari
+ * Copyright (C) 2012 Aleksi Postari (@kulttuuri, aleksi@postari.net)
  * License type: MIT (http://en.wikipedia.org/wiki/MIT_License)
+ * This code is part of project Vaadin Irkkia.
+ * License in short: You can use this code as you wish, but please keep this license information intach or credit the original author in redistributions.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -98,7 +101,7 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Returns the voting plugin for a channel.<br>
 	 * If plugin does not exist, it will be created.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the VotingPlugin for the given channel.
 	 */
 	protected PluginVoting getVotingPlugin(String channelName)
@@ -112,8 +115,8 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * When new channel message is received, it will be logged into database.<br>
 	 * Also logs the channel and user stats.
-	 * @param channel Channel name.
-	 * @param nickname Sender nickname.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
+	 * @param nickname Sender {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param message Message to be added.
 	 */
 	protected void addMessageToDatabase(String channel, String nickname, String message)
@@ -154,7 +157,7 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Prints list of commands to the given channel.
 	 * @param IRC irc.
-	 * @param channel Name of the channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 */
 	protected void sendCommandsToChannel(irc.IRC irc, String channel)
 	{
@@ -192,8 +195,8 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Returns information when the user has last been seen in a channel 
 	 * (when user has last time sent message on a channel).
-	 * @param nickname Nickname
-	 * @param channel Channel
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	public String getLastSeen(String nickname, String channel)
@@ -254,7 +257,7 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Gets statistics for given channel.
-	 * @param channel Name of the channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getChanStats(String channel)
@@ -278,8 +281,8 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Gets statistics for given nickname.
-	 * @param nickname Nickname
-	 * @param channel Channel
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getNickStats(String nickname, String channel)
@@ -304,7 +307,7 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Searches from all channel messages for given search term.
 	 * @param search Search term.
-	 * @param channel Channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 * @deprecated Does not work. Will need to be implemented. TODO: Implement.
 	 */
@@ -333,7 +336,7 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Returns the top chatters for a channel.
-	 * @param channel Name of the channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getTopChatters(String channel)
@@ -360,8 +363,8 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Used to get random sentence from given user on given channel.
-	 * @param nickname Nickname.
-	 * @param channel Channel.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getRandomSentenceFromUser(String nickname, String channel)
@@ -384,8 +387,8 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Tries to get join message for a user.
-	 * @param nickname Target nickname.
-	 * @param channel Name of the channel.
+	 * @param nickname Target {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the join message for given nickname if it exists. If does not exist, will return "".
 	 */
 	protected String getJoinMessage(String nickname, String channel)
@@ -406,9 +409,9 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Changes join message for given user.
-	 * @param nickname Target nickname.
+	 * @param nickname Target {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param message New join message.
-	 * @param channel Name of the channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String changeJoinMessage(String nickname, String message, String channel)
@@ -434,9 +437,9 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Adds new join message for user.
-	 * @param nickname Target nickname for whom the join message will be added to.
+	 * @param nickname Target {@link irc.JavadocLibrary#ircNickname nickname} for whom the join message will be added to.
 	 * @param message Message to be added when user joins the channel.
-	 * @param channel Channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String addJoinMessage(String nickname, String message, String channel)
@@ -462,8 +465,8 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Removes join message from a user.
-	 * @param nickname Target nickname for whom the join message will be removed from. 
-	 * @param channel Channel name.
+	 * @param nickname Target {@link irc.JavadocLibrary#ircNickname nickname} for whom the join message will be removed from. 
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String removeJoinMessage(String nickname, String channel)
@@ -484,7 +487,7 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Searches all defines for given word.
-	 * @param nickname Nickname who did the search.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname nickname} who did the search.
 	 * @param search Searchable word.
 	 * @return Returns the found row. If row was not found, will return no row message.
 	 */
@@ -495,7 +498,7 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Adds new define.
-	 * @param nickname Define adder nickname.
+	 * @param nickname Define adder {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param define Define name.
 	 * @param content Content of the define.
 	 * @return Returns the success message for the operation.
@@ -523,7 +526,7 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Removes define from database.<br>
-	 * @param nickname Caller nickname.
+	 * @param nickname Caller {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param define Define to be removed.
 	 * @return Returns the success message for the operation.
 	 */
@@ -547,8 +550,8 @@ public class IRCBotCommands extends IRCBotSQL
 	 * Changes content of define to other.
 	 * @param define Name of the define.
 	 * @param content New define content.
-	 * @param channel Channel.
-	 * @param nickname Sender nickname.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
+	 * @param nickname Sender {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String changeDefine(String define, String content, String channel, String nickname)
@@ -575,7 +578,7 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Returns information about define.
 	 * @param define Name of the define.
-	 * @param channel IRC channel name.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getDefineInfo(String define, String channel)
@@ -600,7 +603,7 @@ public class IRCBotCommands extends IRCBotSQL
 	/**
 	 * Gets given define from database.
 	 * @param define Name of the define.
-	 * @param channel IRC channel name.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String getDefine(String define, String channel)
@@ -623,8 +626,8 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Tries to get word definition.
-	 * @param Nickname caller nickname.
-	 * @param channel Name of the channel.
+	 * @param Nickname caller {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param message Whole message that user sent.
 	 * @return Returns the content for the word if it is found. Otherwise "".
 	 */
@@ -653,7 +656,7 @@ public class IRCBotCommands extends IRCBotSQL
 	 * Changes the content for given word.
 	 * @param word Word that you would want to change.
 	 * @param message New content for the word.
-	 * @param channel Name of the channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String changeWord(String word, String message, String channel)
@@ -682,10 +685,10 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Adds new word with content.
-	 * @param nickname Sender nickname.
+	 * @param nickname Sender {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param word Matching word.
 	 * @param message Message to be added that matches channel messages.
-	 * @param channel Channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String addWord(String nickname, String word, String message, String channel)
@@ -714,7 +717,7 @@ public class IRCBotCommands extends IRCBotSQL
 	
 	/**
 	 * Removes given word message.
-	 * @param channel Channel name.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @return Returns the success message for the operation.
 	 */
 	protected String removeWord(String word, String channel)
