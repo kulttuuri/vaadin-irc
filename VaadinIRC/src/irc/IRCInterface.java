@@ -1,6 +1,9 @@
 /**
- * Copyright (C) 2012 Aleksi Postari
+ * Copyright (C) 2012 Aleksi Postari (@kulttuuri, aleksi@postari.net)
  * License type: MIT (http://en.wikipedia.org/wiki/MIT_License)
+ * This code is part of project Vaadin Irkkia.
+ * License in short: You can use this code as you wish, but please keep this license information intach or credit the original author in redistributions.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -41,9 +44,9 @@ public abstract interface IRCInterface
 	
 	/**
 	 * Sets channel topic.
-	 * @param channel Name of the channel.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param topic Topic for the channel.
-	 * @param nickname Who did change the topic.
+	 * @param nickname Topic changer {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param notify Do we want to notify channel about the topic change? Generally we do not notify on join topic, but when user changes topic in realtime.
 	 */
 	public abstract void setChannelTopic(String channel, String topic, String nickname, boolean notify);
@@ -58,7 +61,7 @@ public abstract interface IRCInterface
 	
 	/**
 	 * Sends message to given channel.
-	 * @param channel Name of the channel where the message will be sent (without #).
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel} where the message will be sent.
 	 * @param message Message that will be sent to the channel.
 	 * @return Returns true if message was sent to channel. Otherwise false.
 	 */
@@ -73,15 +76,15 @@ public abstract interface IRCInterface
 	
 	/**
 	 * When IRC Client receives a new message.
-	 * @param nickname Message sender's nickname.
+	 * @param nickname Message sender's {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param message The message that was received.
-	 * @param channel Channel where the message was received.
+	 * @param channel {@link irc.JavadocLibrary#ircChannel Channel} where the message was received.
 	 */
 	public abstract void receivedNewMessage(String nickname, String message, String channel);
 	
 	/**
 	 * When user receives new private message.
-	 * @param nickname Sender nickname.
+	 * @param nickname Sender {@link irc.JavadocLibrary#ircNickname nickname}.
 	 * @param message Message that was sent.
 	 */
 	public abstract void receivedNewPrivateMessage(String nickname, String message);
@@ -94,37 +97,37 @@ public abstract interface IRCInterface
 	
 	/**
 	 * When current user joins a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
 	 */
 	public abstract void joinedChannel(String channelName, String network);
 	
 	/**
 	 * When other user joins the channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
-	 * @param nickname Nickname of the user who joined the channel.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname Nickname} of the user who joined the channel.
 	 */
 	public abstract void otherJoinedChannel(String channelName, String network, String nickname);
 	
 	/**
 	 * When user parts a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
 	 */
 	public abstract void leftChannel(String channelName, String network);
 	
 	/**
 	 * When other user parts a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
-	 * @param nickname Nickname of the user who parted the channel.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname Nickname} of the user who parted the channel.
 	 */
 	public abstract void otherLeftChannel(String channelName, String network, String nickname);
 	
 	/**
 	 * When current user was kicked from a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
 	 * @param reason Reason.
 	 */
@@ -132,16 +135,16 @@ public abstract interface IRCInterface
 	
 	/**
 	 * When other user was kicked from a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
-	 * @param nickname Nickname of the user who was kicked from the channel.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname Nickname} of the user who was kicked from the channel.
 	 * @param reason Reason.
 	 */
 	public abstract void otherKickedFromChannel(String channelName, String network, String nickname, String reason);
 	
 	/**
 	 * When current user was banned from a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
 	 * @param reason Reason.
 	 */
@@ -149,9 +152,9 @@ public abstract interface IRCInterface
 	
 	/**
 	 * When other user was banned from a channel.
-	 * @param channelName Name of the channel.
+	 * @param channelName Name of the {@link irc.JavadocLibrary#ircChannel channel}.
 	 * @param network Name of the network.
-	 * @param nickname Nickname of the user who was banned from the channel.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname Nickname} of the user who was banned from the channel.
 	 * @param reason Reason.
 	 */
 	public abstract void otherBannedFromChannel(String channelName, String network, String nickname, String reason);
@@ -181,58 +184,58 @@ public abstract interface IRCInterface
 	
 	/**
 	 * Other user quit the network.
-	 * @param nickname Nickname that did quit.
+	 * @param nickname {@link irc.JavadocLibrary#ircNickname Nickname} that did quit.
 	 * @param network Name of the network.
 	 * @param reason Quit reason.
 	 */
 	public abstract void otherQuitNetwork(String nickname, String network, String reason);
 	
 	/**
-	 * When other user changes nickname.
-	 * @param oldNickname Old nickname.
-	 * @param newNickname New nickname
+	 * When other user changes {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param oldNickname Old {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param newNickname New {@link irc.JavadocLibrary#ircNickname nickname}.
 	 */
 	public abstract void otherChangedNickname(String oldNickname, String newNickname);
 	
 	/**
-	 * When current user changes nickname.
-	 * @param oldNickname Old nickname.
-	 * @param newNickname New nickname.
+	 * When current user changes {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param oldNickname Old {@link irc.JavadocLibrary#ircNickname nickname}.
+	 * @param newNickname New {@link irc.JavadocLibrary#ircNickname nickname}.
 	 */
 	public abstract void userChangedNickname(String oldNickname, String newNickname);
 	
 	/**
 	 * When user list is changed in a channel.
-	 * @param channel Channel where the userlist was changed.
-	 * @param users ArrayList of current users in the channel.
+	 * @param channel {@link irc.JavadocLibrary#ircChannel Channel} where the userlist was changed.
+	 * @param users ArrayList of current users {@link irc.JavadocLibrary#ircNickname nicknames} in the channel.
 	 */
 	public abstract void userListChanged(String channel, ArrayList<String> users);
 	
 	/**
 	 * When users were opped in a channel.
-	 * @param channel Name of the channel.
-	 * @param nickname List of nicknames.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
+	 * @param nickname List of opped {@link irc.JavadocLibrary#ircNickname nicknames}.
 	 */
 	public abstract void usersOpped(String channel, ArrayList<String> nicknames);
 	
 	/**
 	 * When usesr were deopped in a channel.
-	 * @param channel Name of the channel.
-	 * @param nickname Nickname.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
+	 * @param nicknames List of deopped {@link irc.JavadocLibrary#ircNickname nicknames}.
 	 */
 	public abstract void usersDeOpped(String channel, ArrayList<String> nicknames);
 	
 	/**
 	 * When users were given voice in a channel.
-	 * @param channel Name of the channel.
-	 * @param nickname Nickname.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
+	 * @param nicknames List of voiced {@link irc.JavadocLibrary#ircNickname nicknames}.
 	 */
 	public abstract void usersVoiced(String channel, ArrayList<String> nicknames);
 	
 	/**
 	 * When users were devoiced in a channel.
-	 * @param channel Name of the channel.
-	 * @param nickname Nickname.
+	 * @param channel Name of the {@link irc.JavadocLibrary#ircChannel channel}.
+	 * @param nicknames List of devoiced {@link irc.JavadocLibrary#ircNickname nicknames}.
 	 */
 	public abstract void usersDeVoiced(String channel, ArrayList<String> nicknames);
 	

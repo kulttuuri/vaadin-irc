@@ -1,6 +1,9 @@
 /**
- * Copyright (C) 2012 Aleksi Postari
+ * Copyright (C) 2012 Aleksi Postari (@kulttuuri, aleksi@postari.net)
  * License type: MIT (http://en.wikipedia.org/wiki/MIT_License)
+ * This code is part of project Vaadin Irkkia.
+ * License in short: You can use this code as you wish, but please keep this license information intach or credit the original author in redistributions.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -18,6 +21,7 @@ import com.vaadin.ui.*;
 
 /*
  * TODO: Settings from external file.
+ * TODO: IRCHelperissä remove HTML tags on liian greedy, pitäisi VAIN html tagit poistaa.
  * TODO: close() is missing from JDBC calls (it is automatically now closed after certain times, not best practice though)
  * TODO: definelle, addgroupille ja vastaavalle pääluokka mikä yliajetaan ja toimii suoraan niissä se toiminnallisuudet ja tulee komentoihin automaagisesti.
  * TODO: Timestampit asetukseen että näyttääkö chat viestien kanssa.
@@ -54,6 +58,9 @@ public class main extends Application
 	@Override
 	public void init()
 	{
+		// Load application settings from file
+		settings.loadSettingsFromFile();
+		
 		// Create main window
 		Window window = new Window(settings.APP_NAME);
 		window.setTheme("VaIRCTheme");
@@ -63,7 +70,7 @@ public class main extends Application
 		window.setSizeFull();
 		window.getContent().setSizeFull();
 		window.setStyleName("mainWindow");
-		
+
 		// Start VaadinIRC application.
 		VaadinIRC vaadinIRC = new VaadinIRC(window, (Application)this);
 	}
