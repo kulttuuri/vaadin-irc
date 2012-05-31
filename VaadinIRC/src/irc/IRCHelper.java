@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Contains some useful IRC helper functions.
+ * Contains some useful IRC helper functions & enums.
  * @author Aleksi Postari
  *
  */
@@ -127,6 +127,35 @@ public class IRCHelper
 	}
 	
 	/**
+	 * Generates message timestamp.
+	 * @param useTwentyFourFormat If true, return hour in 24 hour format.
+	 * @return Returns message timestamp.
+	 */
+	public static String getTimestamp(boolean useTwentyFourFormat)
+	{
+		return "<small>"+getCurrentHour(useTwentyFourFormat) + ":" + getCurrentMinutes() + "</small> ";
+	}
+	
+	/**
+	 * Returns the current hour.
+	 * @param useTwentyFourFormat If true, will return in 24 hour format. Otherwise in 12 hour format.
+	 * @return Returns the current hour in given format.
+	 */
+	private static String getCurrentHour(boolean useTwentyFourFormat)
+	{
+		return new java.text.SimpleDateFormat(useTwentyFourFormat == true ? "H" : "h").format(new java.util.Date());
+	}
+	
+	/**
+	 * Returns the current minutes.
+	 * @return Current minutes.
+	 */
+	private static String getCurrentMinutes()
+	{
+		return new java.text.SimpleDateFormat("m").format(new java.util.Date());
+	}
+	
+	/**
 	 * Splits commands to list with given delimiter.
 	 * @param row {@link JavadocLibrary#row}
 	 * @param delimiter Delimiter used for the split.
@@ -187,9 +216,12 @@ public class IRCHelper
 		ArrayList<String> spaceSplit = splitCommandsToList(row, " ");
 		try
 		{
-			if (spaceSplit.get(4) != null) returnList.add(spaceSplit.get(4));
-			if (spaceSplit.get(5) != null) returnList.add(spaceSplit.get(5));
-			if (spaceSplit.get(6) != null) returnList.add(spaceSplit.get(6));
+			int index = 4;
+			while (spaceSplit.get(index) != null)
+			{
+				returnList.add(spaceSplit.get(index));
+				index++;
+			}
 		}
 		catch (Exception e)
 		{
