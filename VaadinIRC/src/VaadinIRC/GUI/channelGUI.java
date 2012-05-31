@@ -120,7 +120,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 		newMessage = IRCHelper.convertURLsToHTMLLinks(newMessage);
 		newMessage = IRCHelper.formatIRCTextToHTML(newMessage);
 		
-		Label label = new Label("<b>" + username + "</b> " + newMessage);
+		Label label = new Label(IRCHelper.getTimestamp(false) + "<b>" + username + "</b> " + newMessage);
 			label.setContentMode(Label.CONTENT_RAW);
 			label.setWidth(550, Sizeable.UNITS_PIXELS);
 		panelMessages.addComponent(label);
@@ -142,7 +142,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 		newMessage = IRCHelper.removeTags(newMessage);
 		newMessage = IRCHelper.convertURLsToHTMLLinks(newMessage);
 		
-		Label label = new Label(newMessage);
+		Label label = new Label(IRCHelper.getTimestamp(false) + newMessage);
 			label.setContentMode(Label.CONTENT_RAW);
 			label.setWidth(100, Sizeable.UNITS_PERCENTAGE);
 		panelMessages.addComponent(label);

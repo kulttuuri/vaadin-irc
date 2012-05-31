@@ -92,11 +92,11 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		users.add("@Aleksi");
 		users.add("+Testaaja");
 		users.add("+vairc");
-		users.add("oma");
+		for (int i = 0; i < 5; i++) users.add("oma" + i);
 		users.add("user");
 		ircInterface.userListChanged("#testikannu12345", users);
-		ircInterface.debugSendMessage(":oma!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi JOIN #tiko-jns");
-		ircInterface.debugSendMessage(":reali!~VaIRCUser@a91-152-121-162.elisa-laajakaista.fi PRIVMSG #tiko-jns :testiviesti tämä \u0002boldattu ja väri \u000315 sitten \u001f\u0016 nyt \u000fnormaali!");
+		ircInterface.debugSendMessage(":Kulttuuri!u4267@irccloud.com MODE #testikannu12345 +ooooo oma1 oma2 oma3 oma4 oma5");
+		ircInterface.debugSendMessage(":Kulttuuri!u4267@irccloud.com PRIVMSG #testikannu12345 :moikka kaikki!");
 	}
 	
 	/**
