@@ -147,7 +147,7 @@ public class VaIRCInterface implements IRCInterface
 	public void setVaadinIRC(VaadinIRC vairc)
 	{
 		this.vairc = vairc;
-		}
+	}
 	
 	/**
 	 * Used to set reference to IRC here.

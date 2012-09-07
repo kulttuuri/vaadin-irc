@@ -20,6 +20,10 @@ import com.vaadin.Application;
 import com.vaadin.ui.*;
 
 /*
+ * TODO: Top tabs should be drag & drop orderable.
+ * TODO: Voting command should store results temporary to file (so if program crashes, they can be loaded from the file). Clear file when voting is stopped.
+ * TODO: Search from logs and such should generate link to URL page for results (if there were any).
+ * TODO: Split too long messages to multiple chat messages.
  * TODO: HIGH: Check that user is OP before executing a command.
  * TODO: Removetags on IRCHelper is too greedy, would need to only remove HTML tags.
  * TODO: close() is missing from JDBC calls (it is automatically now closed after certain times, not best practice though)
@@ -62,6 +66,6 @@ public class main extends Application
 		window.setStyleName("mainWindow");
 
 		// Start VaadinIRC application.
-		VaadinIRC vaadinIRC = new VaadinIRC(window, (Application) this);
+		VaadinIRC.getS().init(window);
 	}
 }

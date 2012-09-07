@@ -35,6 +35,7 @@ import com.vaadin.ui.TabSheet.Tab;
  */
 public abstract class VaadinIrcGUI implements CloseHandler
 {
+	private static final long serialVersionUID = 1L;
 	/** Contains reference to Vaadin application main window. */
 	protected Window window;
 	/** Contains the channel / user conversation tabs. */
@@ -44,7 +45,12 @@ public abstract class VaadinIrcGUI implements CloseHandler
 	/** Main application layout. */
 	protected VerticalLayout mainLayout;
 	
-	public VaadinIrcGUI(Window window)
+	/**
+	 * Initializes the application with given window
+	 * (primary just sets up the GUI, tabs and such)
+	 * @param window Reference to window.
+	 */
+	public void init(Window window)
 	{
 		this.window = window;
 		channelTabs = new TabSheet();
