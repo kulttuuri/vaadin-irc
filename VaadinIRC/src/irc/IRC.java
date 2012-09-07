@@ -54,21 +54,22 @@ public class IRC
     private IRCBot ircbot;
 
     /**
-     * Constructor to initialize new IRC and connect to server.
+     * Initializes the IRC class and connects to server.<br>
+     * New IRC connection is only initialized if it was empty.
+     * @param GUIInterface Your own implemented GUIInterface interface.
      * Send your self implemented GUIInterface here that acts as an
      * interface to rely irc messages to / from IRC socket connection.
-     * @param GUIInterface Your own implemented GUIInterface interface.
      * @param session Session containing the IRC user and server information.
      */
-    public IRC(IRCInterface GUIInterface, IRCSession session)
+    public void init(IRCInterface GUIInterface, IRCSession session)
     {
-    	this.GUIInterface = GUIInterface;
-    	this.session = session;
-    	this.ircbot = new IRCBot(settings.IRCBOT_ENABLED, settings.IRCBOT_DATABASE_ADDRESS,
-    		settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD,
-    		settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN, settings.VERSION);
+    	if (this.session == null) this.session = session;
+    	/*if (this.GUIInterface == null) */this.GUIInterface = GUIInterface;
+    	if (this.ircbot == null) this.ircbot = new IRCBot(settings.IRCBOT_ENABLED, settings.IRCBOT_DATABASE_ADDRESS,
+			settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD,
+			settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN, settings.VERSION);
     }
-
+    
     /**
      * Sends new channel message to irc bot.
      * @param row {@link irc.JavadocLibrary#row}

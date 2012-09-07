@@ -33,7 +33,7 @@ public class settings
 	/** Name of the application. */
 	public static final String APP_NAME = "VaadinIRC";
 	/** Version. */
-	public static final String VERSION = "0.83";
+	public static final String VERSION = "0.831";
 	
 	// APPLICATION CONFIGURATIONS
 	

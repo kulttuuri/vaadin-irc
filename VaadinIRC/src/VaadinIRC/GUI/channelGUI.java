@@ -106,7 +106,6 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 		buttonSettings = 			new Button("");
 		buttonChangeNick = 			new Button("");
 		buttonRefreshUsernames =	new Button("");
-		styleComponents();
 	}
 	
 	/**

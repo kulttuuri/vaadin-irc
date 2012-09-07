@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.vaadin.artur.icepush.ICEPush;
@@ -50,36 +51,52 @@ import com.vaadin.ui.Window;
 public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 {
 	/** List of current user channels */
-	private HashMap<String, channelGUI> channelMap = new HashMap<String, channelGUI>();
-	/** Thread where the IRC is running */
+	private LinkedHashMap<String, channelGUI> channelMap = new LinkedHashMap<String, channelGUI>();
+	/** Thread where the IRC is running. */
 	private IRC irc;
 	/** Reference to implemented IRCGuiInterface */
 	VaIRCInterface ircInterface = new VaIRCInterface();
-	/** Reference to Vaadin main application window */
-	private Window window;
-	/** Settings window */
-	private GUIWindowSettings windowSettings;
-	/** Change nickname window */
-	private GUIWindowChangeNickname windowNickname;
 	/** IRC Session information. */
 	private IRCSession session = new IRCSession();
 	/** Addon component for Vaadin that allows to force push changes from server to client. */
 	private ICEPush pusher;
-	
-	/**
-	 * Constructor to start the VaadinIRC application.
-	 * @param window Reference to main application window.
-	 * @param application Reference to Application.
-	 */
-	public VaadinIRC(Window window, Application application)
+
+	@Override
+	public void init(Window window)
 	{
-		// Call super implementation (VaadinIrcGUI) to create the irc view and to store reference to main application window
-		super(window);
-		this.window = window;
-		// Initialize VaadinIRC
-		init(window);
+		// Call super init implementation to create the irc view and to store reference to main application window
+		super.init(window);
+		
+		// Initialize icePush addon & add it to main layout.
+		pusher = new ICEPush();
+			mainLayout.addComponent(pusher);
+			mainLayout.setExpandRatio(pusher, 0.0f);
+		// Setup IRC class & IRC Interface
+		ircInterface.setVaadinIRC(this);
+		if (irc == null) irc = new IRC();
+		irc.init(ircInterface, session);
+		ircInterface.setIRC(irc);
+		// Create status channel if it does not exist.
+		if (!channelMap.containsKey("status")) createChannel("status");
+		// Add actionListener to channel tabs to listen for tab changes
+		channelTabs.addListener(this);
+		
 		if (settings.debug) debug(session);
-		else showSettingsWindow();
+		else if (!irc.isConnectionRunning()) showSettingsWindow();
+		
+		// Initialize all channel tabs visible for the client.
+		channelGUI curChan; String channelName = "";
+		for (java.util.Map.Entry<String, channelGUI> entry : channelMap.entrySet())
+		{
+			curChan = entry.getValue();
+			channelName = curChan.getChannelName();
+			channelMap.get(channelName).styleComponents();
+			channelTabs.addTab(channelMap.get(channelName).getChannelGUI(), channelName);
+			channelTabs.setSelectedTab(channelMap.get(channelName).getChannelGUI());
+			// Set icon for the channel
+			removeChannelActivity(channelName);
+		}
+		refreshTopbarText();
 	}
 	
 	/** Used for debug purposes. */
@@ -200,26 +217,6 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 	}
 	
 	/**
-	 * Initializes VaadinIRC.
-	 * @param window Main application window.
-	 */
-	private void init(Window window)
-	{
-		// Initialize icePush addon & add it to main layout.
-		pusher = new ICEPush();
-			mainLayout.addComponent(pusher);
-			mainLayout.setExpandRatio(pusher, 0.0f);
-		// Setup IRC class & IRC Interface
-		ircInterface.setVaadinIRC(this);
-		irc = new IRC(ircInterface, session);
-		ircInterface.setIRC(irc);
-		// Create status channel.
-		createChannel("status");
-		// Add actionListener to channel tabs to listen for tab changes
-		channelTabs.addListener(this);
-	}
-	
-	/**
 	 * Forces server to send the latest information to client using the
 	 * ICEPush addon for Vaadin.
 	 */
@@ -276,6 +273,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		
 		// Add channel to list of channel maps and create new Tab to TabSheet out of it & select the newly created tab.
 		channelMap.put(nickname, new channelGUI(nickname, this, ircInterface));
+		channelMap.get(nickname).styleComponents();
 		channelTabs.addTab(channelMap.get(nickname).getChannelGUI(), nickname);
 		channelTabs.setSelectedTab(channelMap.get(nickname).getChannelGUI());
 		getTab(nickname).setClosable(true);
@@ -297,6 +295,7 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 
 		// Add channel to list of channel maps and create new Tab to TabSheet out of it & select the newly created tab.
 		channelMap.put(channelName, new channelGUI(channelName, this, ircInterface));
+		channelMap.get(channelName).styleComponents();
 		channelTabs.addTab(channelMap.get(channelName).getChannelGUI(), channelName);
 		channelTabs.setSelectedTab(channelMap.get(channelName).getChannelGUI());
 		// Set icon for the channel
@@ -364,4 +363,9 @@ public class VaadinIRC extends VaadinIrcGUI implements SelectedTabChangeListener
 		else
 			removeChannel(name);
 	}
+	
+    // This class is singleton because you can only have one VaadinIRC main class.
+    public static VaadinIRC getS() { if (singleton == null) singleton = new VaadinIRC(); return singleton; }
+    public Object clone() throws CloneNotSupportedException { throw new CloneNotSupportedException(); }
+    private static VaadinIRC singleton;
 }
