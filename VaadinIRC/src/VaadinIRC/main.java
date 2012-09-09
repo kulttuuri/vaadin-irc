@@ -17,9 +17,17 @@ package VaadinIRC;
 
 import VaadinIRC.VaadinIRC.VaadinIRC;
 import com.vaadin.Application;
+import com.vaadin.terminal.ErrorMessage;
+import com.vaadin.terminal.Sizeable;
+import com.vaadin.terminal.UserError;
 import com.vaadin.ui.*;
+import com.vaadin.ui.LoginForm.LoginEvent;
+import com.vaadin.ui.LoginForm.LoginListener;
+import com.vaadin.ui.Window.Notification;
 
 /*
+ * TODO: Own nick change should be also announced in the status channel.
+ * TODO: Topright icon should also be drawn even if you are missing / from end of the URL.
  * TODO: Top tabs should be drag & drop orderable.
  * TODO: Voting command should store results temporary to file (so if program crashes, they can be loaded from the file). Clear file when voting is stopped.
  * TODO: Search from logs and such should generate link to URL page for results (if there were any).
@@ -46,6 +54,9 @@ import com.vaadin.ui.*;
  */
 public class main extends Application
 {
+	private Window window;
+	private Panel loginPanel;
+	
 	/**
 	 * Initializes vaadin application.
 	 */
@@ -56,7 +67,7 @@ public class main extends Application
 		settings.loadSettingsFromFile();
 
 		// Create main window
-		Window window = new Window(settings.APP_NAME);
+		window = new Window(settings.APP_NAME);
 		window.setTheme("VaIRCTheme");
 		setMainWindow(window);
 
@@ -64,8 +75,53 @@ public class main extends Application
 		window.setSizeFull();
 		window.getContent().setSizeFull();
 		window.setStyleName("mainWindow");
-
-		// Start VaadinIRC application.
+		
+		// Check if we do need to show login panel
+		if (settings.AUTHENTICATION_ENABLED) showLoginPanel();
+		else startMainApplication();
+	}
+	
+	/**
+	 * Shows login panel for the user.
+	 */
+	private void showLoginPanel()
+	{
+		loginPanel = new Panel("Login");
+		loginPanel.setWidth(250, Sizeable.UNITS_PIXELS);
+		loginPanel.setHeight(200, Sizeable.UNITS_PIXELS);
+		LoginForm login = new LoginForm();
+		loginPanel.addComponent(login);
+		window.addComponent(loginPanel);
+		VerticalLayout windowLayout = (VerticalLayout)window.getLayout();
+		windowLayout.setComponentAlignment(loginPanel, Alignment.MIDDLE_CENTER);
+		
+		login.addListener(new LoginListener()
+		{
+			public void onLogin(LoginEvent event)
+			{
+				String username = event.getLoginParameter("username");
+				String password = event.getLoginParameter("password");
+				if (username.equals(settings.AUTHENTICATION_USERNAME) && password.equals(settings.AUTHENTICATION_PASSWORD))
+				{
+					window.removeComponent(loginPanel);
+					startMainApplication();
+				}
+				else
+				{
+					Notification notification = new Notification("Wrong username or password.", Notification.TYPE_ERROR_MESSAGE);
+					notification.setPosition(Notification.POSITION_BOTTOM_RIGHT);
+					notification.setDelayMsec(250);
+					window.showNotification(notification);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Starts the main VaadinIRC application.
+	 */
+	private void startMainApplication()
+	{
 		VaadinIRC.getS().init(window);
 	}
 }

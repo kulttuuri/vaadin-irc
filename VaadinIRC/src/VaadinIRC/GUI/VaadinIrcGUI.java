@@ -16,7 +16,6 @@
 package VaadinIRC.GUI;
 
 import java.util.Iterator;
-
 import VaadinIRC.main;
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.Alignment;
@@ -31,7 +30,6 @@ import com.vaadin.ui.TabSheet.Tab;
 /**
  * GUI for VaadinIRC IRC View.
  * @author Aleksi Postari
- *
  */
 public abstract class VaadinIrcGUI implements CloseHandler
 {
@@ -44,10 +42,9 @@ public abstract class VaadinIrcGUI implements CloseHandler
 	protected Label topLabel;
 	/** Main application layout. */
 	protected VerticalLayout mainLayout;
-	
+
 	/**
-	 * Initializes the application with given window
-	 * (primary just sets up the GUI, tabs and such)
+	 * Initializes the application with given window (primary just sets up the GUI, tabs and such)
 	 * @param window Reference to window.
 	 */
 	public void init(Window window)
@@ -57,33 +54,32 @@ public abstract class VaadinIrcGUI implements CloseHandler
 		channelTabs.setImmediate(true);
 		createIrcView();
 	}
-	
+
 	/**
 	 * Creates the main IRC view.
 	 */
 	private void createIrcView()
 	{
-		//VerticalLayout vert = new VerticalLayout();
-		//window.addComponent(vert);
-		//vert.setWidth(100, Sizeable.UNITS_PERCENTAGE);
-		//vert.setHeight(100, Sizeable.UNITS_PERCENTAGE);
-		//channelTabs.setSizeFull();
-		//window.addComponent(channelTabs);
+		// VerticalLayout vert = new VerticalLayout();
+		// window.addComponent(vert);
+		// vert.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+		// vert.setHeight(100, Sizeable.UNITS_PERCENTAGE);
+		// channelTabs.setSizeFull();
+		// window.addComponent(channelTabs);
 		mainLayout = new VerticalLayout();
-			topLabel = new Label("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_delete.png'/> Not connected to any network.</div>", Label.CONTENT_RAW);
-			mainLayout.addComponent(topLabel);
-			mainLayout.addComponent(channelTabs);
-			channelTabs.setSizeFull();
-			channelTabs.setCloseHandler(this);
-			mainLayout.setExpandRatio(channelTabs, 1.0f);
-			mainLayout.setSizeFull();
+		topLabel = new Label("<div style='float: right; background-color: #BDE3F6; width: 40%; border: 1px solid black;'><img src='./VAADIN/themes/VaIRCTheme/images/server_delete.png'/> Not connected to any network.</div>", Label.CONTENT_RAW);
+		mainLayout.addComponent(topLabel);
+		mainLayout.addComponent(channelTabs);
+		channelTabs.setSizeFull();
+		channelTabs.setCloseHandler(this);
+		mainLayout.setExpandRatio(channelTabs, 1.0f);
+		mainLayout.setSizeFull();
 		window.addComponent(mainLayout);
-		//vert.setExpandRatio(channelTabs, 100);
+		// vert.setExpandRatio(channelTabs, 100);
 	}
-	
+
 	/**
-	 * Iterates through channel tabs and returns the tab with given name.
-	 * If tab was not found, will return null.
+	 * Iterates through channel tabs and returns the tab with given name. If tab was not found, will return null.
 	 * @param tabName Name of the tab what you wish to retrieve.
 	 * @return Returns the tab with given name. If tab was not found, returns null.
 	 */
@@ -93,10 +89,10 @@ public abstract class VaadinIrcGUI implements CloseHandler
 		Tab tab;
 		while (i.hasNext())
 		{
-		    Component c = (Component)i.next();
-		    tab = channelTabs.getTab(c);
-		    // Store found tab
-		    if (tabName.equals(tab.getCaption())) return channelTabs.getTab(c);
+			Component c = (Component) i.next();
+			tab = channelTabs.getTab(c);
+			// Store found tab
+			if (tabName.equals(tab.getCaption())) return channelTabs.getTab(c);
 		}
 		return null;
 	}
