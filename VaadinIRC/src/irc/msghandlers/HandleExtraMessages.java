@@ -63,8 +63,7 @@ public class HandleExtraMessages extends MsgHandler
 		// PING
     	if (row.startsWith("PING"))
     	{
-    		// TODO: Debug, comment out after ok
-    		//ircApp.handlePingResponse(row);
+    		ircApp.handlePingResponse(row);
     	}
 		// NOTICE
 		if (row.startsWith("NOTICE"))
