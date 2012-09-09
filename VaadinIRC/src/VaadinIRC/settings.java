@@ -35,6 +35,15 @@ public class settings
 	/** Version. */
 	public static final String VERSION = "0.831";
 	
+	// AUTHENTICATION
+	
+	/** If this is enabled, login panel is shown to user when he opens up the VaadinIRC application. */
+	public static boolean AUTHENTICATION_ENABLED = true;
+	/** Username that user needs to type in to use the application. */
+	public static String AUTHENTICATION_USERNAME = "";
+	/** Password that user needs to type in to use the application. */
+	public static String AUTHENTICATION_PASSWORD = "";
+	
 	// APPLICATION CONFIGURATIONS
 	
 	/** Is debug mode enabled? Set to false on production environment. */
@@ -77,6 +86,10 @@ public class settings
 		DEFAULT_SERVER_PORT = getIntProperty(path, "DEFAULT_SERVER_PORT", DEFAULT_SERVER_PORT);
 		READER_ENCODING = getStringProperty(path, "READER_ENCODING", READER_ENCODING);
 		WRITER_ENCODING = getStringProperty(path, "WRITER_ENCODING", WRITER_ENCODING);
+		// Authentication settings
+		AUTHENTICATION_ENABLED = getBooleanProperty(path, "AUTHENTICATION_ENABLED", true);
+		AUTHENTICATION_USERNAME = getStringProperty(path, "AUTHENTICATION_USERNAME", "");
+		AUTHENTICATION_PASSWORD = getStringProperty(path, "AUTHENTICATION_PASSWORD", "");
 		// Ircbot settings
 		IRCBOT_ENABLED = getBooleanProperty(path, "IRCBOT_ENABLED", IRCBOT_ENABLED);
 		IRCBOT_DATABASE_DRIVER = getStringProperty(path, "IRCBOT_DATABASE_DRIVER", IRCBOT_DATABASE_DRIVER);
