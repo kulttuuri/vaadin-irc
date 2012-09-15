@@ -45,7 +45,6 @@ public abstract class IRCBotSQL
 	private String databaseDriver;
 	/** Name of the database. */
 	private String databaseName;
-	
 	/** Contains the database connection. */
 	private Connection connection;
 	
@@ -391,6 +390,19 @@ public abstract class IRCBotSQL
 			  "PRIMARY KEY (id)"+
 			  ") ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci");
 			System.out.println("Created table settings!");
+			st.close();
+			
+			// Create table todo
+			st = connection.createStatement();
+			st.executeUpdate("CREATE TABLE todo ("+
+			  "id int(11) NOT NULL AUTO_INCREMENT,"+
+			  "created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,"+
+			  "channel text COLLATE utf8_unicode_ci NOT NULL,"+
+			  "content text COLLATE utf8_unicode_ci,"+
+			  "status text COLLATE utf8_unicode_ci,"+
+			  "nickname text COLLATE utf8_unicode_ci,"+
+			  "KEY id (id)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
+			System.out.println("Created table todo!");
 			st.close();
 			
 			System.out.println("New database for VaadinIRC was created succesfully!");

@@ -67,7 +67,7 @@ public class IRC
     	/*if (this.GUIInterface == null) */this.GUIInterface = GUIInterface;
     	if (this.ircbot == null) this.ircbot = new IRCBot(settings.IRCBOT_ENABLED, settings.IRCBOT_DATABASE_ADDRESS,
 			settings.IRCBOT_DATABASE_USERNAME, settings.IRCBOT_DATABASE_PASSWORD,
-			settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN, settings.VERSION);
+			settings.IRCBOT_DATABASE_DRIVER, settings.IRCBOT_DATABASE_NAME, settings.IRCBOT_BOT_CALL_SIGN, settings.VERSION, settings.IRCBOT_APPLICATION_URL);
     }
     
     /**

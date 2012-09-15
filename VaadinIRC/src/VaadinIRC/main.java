@@ -15,17 +15,36 @@
 
 package VaadinIRC;
 
+import java.util.HashMap;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import VaadinIRC.GUI.IRC.GUICommands;
+import VaadinIRC.GUI.IRC.GUIDefine;
+import VaadinIRC.GUI.IRC.GUITodo;
 import VaadinIRC.VaadinIRC.VaadinIRC;
 import com.vaadin.Application;
 import com.vaadin.terminal.ErrorMessage;
 import com.vaadin.terminal.Sizeable;
 import com.vaadin.terminal.UserError;
+import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
 import com.vaadin.ui.*;
 import com.vaadin.ui.LoginForm.LoginEvent;
 import com.vaadin.ui.LoginForm.LoginListener;
 import com.vaadin.ui.Window.Notification;
 
 /*
+ * TODO: todo commands
+ * addtodo <CONTENT>
+ * removetodo <ID>
+ * changetodo <ID> <NEWSTATE>
+ * addtodoenum <NAME> <NEWENUM> (Tarkistaa onko jo olemassa enumia)
+ * removetodoenum <ENUM>
+ * 
+ * TODO: Parse parameters.
+ * TODO: You left the channel -message is coming twice in status channel.
+ * TODO: Handle all rest of IRC messages.
+ * TODO: Tab should autocomplete nickname.
+ * TODO: Old messages should be removed from memory (right now if there are too many messages, it will not scroll to end on new messages).
  * TODO: Own nick change should be also announced in the status channel.
  * TODO: Topright icon should also be drawn even if you are missing / from end of the URL.
  * TODO: Top tabs should be drag & drop orderable.
@@ -52,10 +71,18 @@ import com.vaadin.ui.Window.Notification;
  * Entry point for VaadinIRC.
  * @author Aleksi Postari
  */
-public class main extends Application
+public class main extends Application implements HttpServletRequestListener
 {
+	/** Main VaadinIRC Application window. */
 	private Window window;
+	/** Login panel. */
 	private Panel loginPanel;
+	/** Reference to GUITodo. */
+	private GUITodo todogui;
+	/** Reference to GUIDefin. */
+	private GUIDefine guidefine;
+	/** Reference to GUICommands. */
+	private GUICommands guicommands;
 	
 	/**
 	 * Initializes vaadin application.
@@ -66,6 +93,21 @@ public class main extends Application
 		// Load application settings from file
 		settings.loadSettingsFromFile();
 
+		createMainVaadinIRCWindow();
+		createDefineView();
+		createCommandsView();
+		//createTodoWindow();
+		
+		// Check if we do need to show login panel
+		if (settings.AUTHENTICATION_ENABLED) showLoginPanel();
+		else startMainApplication();
+	}
+	
+	/**
+	 * Creates the main VaadinIRC application window.
+	 */
+	private void createMainVaadinIRCWindow()
+	{
 		// Create main window
 		window = new Window(settings.APP_NAME);
 		window.setTheme("VaIRCTheme");
@@ -75,10 +117,39 @@ public class main extends Application
 		window.setSizeFull();
 		window.getContent().setSizeFull();
 		window.setStyleName("mainWindow");
-		
-		// Check if we do need to show login panel
-		if (settings.AUTHENTICATION_ENABLED) showLoginPanel();
-		else startMainApplication();
+	}
+	
+	/**
+	 * Create window for todo view.
+	 */
+	private void createTodoWindow()
+	{
+		Window todoWindow = new Window();
+		todoWindow.setName("todo");
+		addWindow(todoWindow);
+		todogui = new GUITodo(todoWindow);
+	}
+	
+	/**
+	 * Create window for defines view.
+	 */
+	private void createDefineView()
+	{
+		Window defineWindow = new Window();
+		defineWindow.setName("defines");
+		addWindow(defineWindow);
+		guidefine = new GUIDefine(defineWindow);
+	}
+	
+	/**
+	 * Create window for command help.
+	 */
+	private void createCommandsView()
+	{
+		Window commandsWindow = new Window();
+		commandsWindow.setName("commands");
+		addWindow(commandsWindow);
+		guicommands = new GUICommands(commandsWindow);
 	}
 	
 	/**
@@ -123,5 +194,17 @@ public class main extends Application
 	private void startMainApplication()
 	{
 		VaadinIRC.getS().init(window);
+	}
+	
+	public void onRequestStart(HttpServletRequest request, HttpServletResponse response)
+	{
+	}
+
+	// Gets the query strings passed into the webpage and sends to windows.
+	// We use this one instead of onRequestStart as these parameters are passed after the GUI interfaces and such are initialized first.
+	public void onRequestEnd(HttpServletRequest request, HttpServletResponse response)
+	{
+		if (todogui != null) todogui.handleQueryStrings(request, response);
+		if (guidefine != null) guidefine.handleQueryStrings(request, response);
 	}
 }

@@ -33,7 +33,7 @@ public class settings
 	/** Name of the application. */
 	public static final String APP_NAME = "VaadinIRC";
 	/** Version. */
-	public static final String VERSION = "0.831";
+	public static final String VERSION = "0.832";
 	
 	// AUTHENTICATION
 	
@@ -56,11 +56,15 @@ public class settings
 	public static String READER_ENCODING = "UTF-8";
 	/** Character encoding for messages written to server. Leave as "" to use system default. */
 	public static String WRITER_ENCODING = "";
+	/** Maximum amount of messages that can reside in a channel. After messages go over this number, all old messages will be cleared from the channel. */
+	public static int MAX_CHANNEL_MESSAGES = 500;
 	
 	// IRCBOT CONFIGURATIONS
 	
 	/** Bot Enabled? */
 	public static boolean IRCBOT_ENABLED = true;
+	/** URL Address where this application can be accessed from. Used to display todo, define and such web views for users. Can also be blank to disable that functionality. */
+	public static String IRCBOT_APPLICATION_URL = "";
 	/** Database driver. Defaults to com.mysql.jdbc.Driver. */
 	public static String IRCBOT_DATABASE_DRIVER = "com.mysql.jdbc.Driver";
 	/** Database address. Defaults to jdbc:mysql://localhost:3306/ */
@@ -86,12 +90,14 @@ public class settings
 		DEFAULT_SERVER_PORT = getIntProperty(path, "DEFAULT_SERVER_PORT", DEFAULT_SERVER_PORT);
 		READER_ENCODING = getStringProperty(path, "READER_ENCODING", READER_ENCODING);
 		WRITER_ENCODING = getStringProperty(path, "WRITER_ENCODING", WRITER_ENCODING);
+		MAX_CHANNEL_MESSAGES = getIntProperty(path, "MAX_CHANNEL_MESSAGES", MAX_CHANNEL_MESSAGES);
 		// Authentication settings
 		AUTHENTICATION_ENABLED = getBooleanProperty(path, "AUTHENTICATION_ENABLED", true);
 		AUTHENTICATION_USERNAME = getStringProperty(path, "AUTHENTICATION_USERNAME", "");
 		AUTHENTICATION_PASSWORD = getStringProperty(path, "AUTHENTICATION_PASSWORD", "");
 		// Ircbot settings
 		IRCBOT_ENABLED = getBooleanProperty(path, "IRCBOT_ENABLED", IRCBOT_ENABLED);
+		IRCBOT_APPLICATION_URL = getStringProperty(path, "IRCBOT_APPLICATION_URL", IRCBOT_APPLICATION_URL);
 		IRCBOT_DATABASE_DRIVER = getStringProperty(path, "IRCBOT_DATABASE_DRIVER", IRCBOT_DATABASE_DRIVER);
 		IRCBOT_DATABASE_ADDRESS = getStringProperty(path, "IRCBOT_DATABASE_ADDRESS", IRCBOT_DATABASE_ADDRESS);
 		IRCBOT_DATABASE_NAME = getStringProperty(path, "IRCBOT_DATABASE_NAME", IRCBOT_DATABASE_NAME);
