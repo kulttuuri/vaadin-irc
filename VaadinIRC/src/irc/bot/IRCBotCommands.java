@@ -34,13 +34,15 @@ import java.util.Map.Entry;
 public class IRCBotCommands extends IRCBotSQL
 {
 	/** List of commands that the bot supports. */
-	private static HashMap<String, String> commands = new HashMap<String, String>();
+	public static HashMap<String, String> commands = new HashMap<String, String>();
 	static
 	{
+		commands.put("commands|help", "Shows URL to commands or sends commands directly to channel if web views are disabled. Parameters: -");
 		commands.put("defadd", "Adds new define, Parameters: word content");
 		commands.put("defrem", "Removes define, Parameters: word");
 		commands.put("define", "Gets define for given word, Parameters: word ?#channel");
 		commands.put("definfo", "Gets information about given define, Parameters: word ?#channel");
+		commands.put("defines", "Shows all defines for this channel in web view.");
 		commands.put("defchange", "Changes existing define, Parameters: word content");
 		commands.put("joinget", "Gets join message that has been added to user, Parameters: nickname");
 		commands.put("joinadd", "Adds join message for given user, Parameters: nickname message");

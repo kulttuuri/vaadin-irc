@@ -29,7 +29,7 @@ import VaadinIRC.GUI.componentContainers.ChannelGUIComponentContainer;
 import VaadinIRC.VaadinIRC.VaIRCInterface;
 import VaadinIRC.VaadinIRC.VaadinIRC;
 
-import com.sun.java.swing.plaf.windows.resources.windows;
+import com.google.gwt.soyc.Settings;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
@@ -72,7 +72,9 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	/** Reference to IRCInterface. */
 	private VaIRCInterface ircInterface;
 	/** Reference to VaadinIRC */
-	VaadinIRC vaIRC;
+	private VaadinIRC vaIRC;
+	/** Amount of messages sent into the channel. If they are over {@link settings#MAX_CHANNEL_MESSAGES} all old messages will be cleared from the channel. */
+	private int channelMessages = 0;
 	
 	/** User table right click option whois. */
 	private static final Action ACTION_WHOIS = new Action("Whois");
@@ -115,6 +117,13 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	 */
 	public void addStandardChannelMessage(String username, String newMessage)
 	{
+		channelMessages++; 
+		if (channelMessages > settings.MAX_CHANNEL_MESSAGES)
+		{
+			panelMessages.removeAllComponents();
+			channelMessages = 0;
+		}
+		
 		newMessage = IRCHelper.removeTags(newMessage);
 		newMessage = IRCHelper.convertURLsToHTMLLinks(newMessage);
 		newMessage = IRCHelper.formatIRCTextToHTML(newMessage);
@@ -138,6 +147,14 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	 */
 	public void addMessageToChannelTextarea(String newMessage)
 	{
+		channelMessages++;
+		if (channelMessages > settings.MAX_CHANNEL_MESSAGES)
+		{
+			panelMessages.removeAllComponents();
+			System.out.println("Removing all labels!!!");
+			channelMessages = 0;
+		}
+		
 		newMessage = IRCHelper.removeTags(newMessage);
 		newMessage = IRCHelper.convertURLsToHTMLLinks(newMessage);
 		
@@ -153,7 +170,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 		ircInterface.setNewActivityToTab(channelName);
 		ircInterface.pushChangesToClient();
 	}
-	
+
 	/**
 	 * Returns the channel name.
 	 * @return Channel name.
@@ -429,7 +446,7 @@ public class channelGUI extends ChannelGUIComponentContainer implements Button.C
 	}
 	
 	/**
-	 * Queries new list of nicknames from server.
+	 * Queries new list of nicknames from the server.
 	 */
 	private void refreshNicknameList()
 	{

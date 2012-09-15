@@ -28,6 +28,9 @@ import java.util.ArrayList;
  */
 public class IRCBot extends IRCBotCommands
 {
+	/** Are the web views for defines, todos and such enabled? */
+	private String applicationURL = null;
+	
 	/**
 	 * Constructor to start the IRCBot.
 	 * @param enabled Is the bot enabled?
@@ -38,10 +41,12 @@ public class IRCBot extends IRCBotCommands
 	 * @param databaseName SQL database name.
 	 * @param botCallSign What sign is used to call bot commands.
 	 * @param version Bot version.
+	 * @param applicationURL URL address where this application can be accessed from.
 	 */
-	public IRCBot(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName, String botCallSign, String version)
+	public IRCBot(boolean enabled, String address, String username, String password, String databaseDriver, String databaseName, String botCallSign, String version, String applicationURL)
 	{
 		super(enabled, address, username, password, databaseDriver, databaseName, botCallSign, version);
+		if (!applicationURL.trim().equals("")) this.applicationURL = applicationURL;
 	}
 	
 	/**
@@ -95,15 +100,21 @@ public class IRCBot extends IRCBotCommands
 			ArrayList<String> parameters = IRCHelper.splitCommandsToList(message, " ");
 			if (parameters.size() > 0) parameters.remove(0);
 
+			// Do not handle empty commands.
+			if (message.trim().length() == 1) return;
+			
 			// Botinfo
 			if (message.startsWith(botCallSign + "botinfo"))
 			{
 				ircgui.sendMessageToChannel(channel, getBotInfo());
 			}
-			// Help
-			else if (message.startsWith(botCallSign + "help"))
+			// Help or commands
+			else if (message.startsWith(botCallSign + "help") || message.startsWith(botCallSign + "commands"))
 			{
-				sendCommandsToChannel(irc, channel);
+				if (applicationURL != null)
+					ircgui.sendMessageToChannel(channel, applicationURL + "/commands");
+				else
+					sendCommandsToChannel(irc, channel);
 			}
 			// Commandhelp
 			else if (message.startsWith(botCallSign + "commandhelp"))
@@ -186,6 +197,12 @@ public class IRCBot extends IRCBotCommands
 			{
 				ArrayList<String> msgs = getVotingPlugin(channel).getVotingInformation();
 				for (String msg : msgs) ircgui.sendMessageToChannel(channel, msg);
+			}
+			// Defines
+			else if (message.startsWith(botCallSign + "defines"))
+			{
+				if (applicationURL != null)
+					ircgui.sendMessageToChannel(channel, applicationURL + "/defines?channel=" + channel.substring(1, channel.length()));
 			}
 			// Define
 			else if (message.startsWith(botCallSign + "define"))
